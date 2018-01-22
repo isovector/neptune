@@ -47,62 +47,62 @@ passes Wendy, Angelo's assistant.
                                      WENDY
     Nice speech. I felt so moved.
 
-    COLIN
+                                     COLIN
     Thanks, Wendy.
 
-    WENDY
+                                     WENDY
     Hey, how's that report for the board members coming along? Angelo was pretty
     adamant about presenting it tomorrow morning.
 
-    COLIN
+                                     COLIN
     Oh? Yeah, yeah, it's coming along swimmingly.
 
-    WENDY
+                                     WENDY
     You haven't started it yet, have you?
 
     ----
 
-    COLIN
+                                     COLIN
     I used to be able to slip things past you. When did you get to be so astute?
 
-    WENDY
+                                     WENDY
     It's necessary to survive in this industry. I might just be a secretary, but
     the fact that Kimberly, James or you haven't managed to get me fired in any
     of your mad quests for power must mean something. Survival of the fittest, I
     guess?
 
-    COLIN
+                                     COLIN
     Oh come on. I love you! You're great, Wendy. I'd never get in your way, you
     know that. James, now, that guy is trouble.
 
-    WENDY
+                                     WENDY
     Whatever.
 
-    WENDY
+                                     WENDY
     You know, if you can't get that report done for tomorrow, you could always
     sucker some poor intern to do it for you. That's what Kim does.
 
-    COLIN
+                                     COLIN
     And pervert the sanctity of my honest work ethic and can-do attitude? What
     do you take me for, Wendy?
 
     ----
 
-    COLIN
+                                     COLIN
     Hey uhh, know if we have any new interns?
 
-    WENDY
+                                     WENDY
     You mean ones who weren't here for the Christmas party?
 
-    COLIN
+                                     COLIN
     Yeah, like ones who weren't here for the Christmas party.
 
-    WENDY
+                                     WENDY
     There's a new guy -- I think he started last week. His name is Simon if I
     remember correctly. Fresh blood; straight out of college. I think he works
     down in the finance room.
 
-    WENDY
+                                     WENDY
     If you get down there soon enough, maybe James won't get a chance to get his
     claws in him first.
 
