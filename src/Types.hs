@@ -211,19 +211,7 @@ data Room = Room
   , _navmesh   :: !NavMesh
   , _hotspots  :: Pos -> Maybe Hotspot
   , _roomScale :: Float
-  , onRoomTick :: Time -> Room -> Game Room
-  , onRoomEnter :: Room -> Game Room
-  , onRoomLeave :: Room -> Game Room
   }
-
-defOnRoomTick :: Time -> Room -> Game Room
-defOnRoomTick = const pure
-
-defOnRoomEnter :: Room -> Game Room
-defOnRoomEnter = pure
-
-defOnRoomLeave :: Room -> Game Room
-defOnRoomLeave = pure
 
 ------------------------------------------------------------------------------
 

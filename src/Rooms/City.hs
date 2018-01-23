@@ -33,9 +33,6 @@ cityRoom = Room []
              <||> mkHotspot regions (== 96) door
                 )
                 0.5
-                defOnRoomTick
-                defOnRoomEnter
-                defOnRoomLeave
 
 door :: Hotspot
 door = def

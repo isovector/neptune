@@ -34,9 +34,6 @@ costumeRoom = Room []
                 ( mkHotspot regions (== 48) door
                 )
                 0.75
-                defOnRoomTick
-                defOnRoomEnter
-                defOnRoomLeave
 
 door :: Hotspot
 door = def

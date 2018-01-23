@@ -35,9 +35,6 @@ studyRoom = Room [charles]
               <||> mkHotspot regions (== 144) carpet
                  )
                  1
-                defOnRoomTick
-                defOnRoomEnter
-                defOnRoomLeave
 
 door :: Hotspot
 door = def

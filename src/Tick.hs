@@ -7,7 +7,6 @@ module Tick
 import Actors
 import Control.Monad.Trans.State (gets)
 import Hotspots
-import Rooms
 import System
 import Types
 import Viewport
@@ -24,7 +23,6 @@ tick dt = flip runSystem $ do
   cameraPos .= focusCamera (room ^. roomSize) virtualView (av ^. actorPos)
 
 
-  currentRoom %~~ tickRoom  dt
   currentRoom . actors . traverse %~~ tickActor dt room
   lift $ tickHotspots avatar
 
