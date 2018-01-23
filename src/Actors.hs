@@ -14,7 +14,7 @@ import Types
 -- | Lift a function over an 'Actor' to 'SomeActor'.
 liftActor
     :: Functor m
-    => (forall s. Actor s -> m (Actor s))
+    => (Actor -> m Actor)
     -> SomeActor
     -> m SomeActor
 liftActor f (SomeActor actor) = fmap SomeActor $ f actor
@@ -25,6 +25,6 @@ liftActor f (SomeActor actor) = fmap SomeActor $ f actor
 tickActor :: Time -> SomeRoom -> SomeActor -> Game SomeActor
 tickActor dt room = liftActor $ flip _onActorTick dt >> pumpMotion dt room
 
-useDefaultZOrdering :: Actor s -> Actor s
+useDefaultZOrdering :: Actor -> Actor
 useDefaultZOrdering a = a & actorZIndex .~ (10000 - a ^. actorPos'._y)
 

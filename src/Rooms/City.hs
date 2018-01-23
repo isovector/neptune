@@ -24,12 +24,8 @@ regions :: Image PixelRGBA8
 regions = unsafeLoadDataPng $ base </> "regions"
 
 
-instance HasRoom 'City where
-  type RoomModel 'City = ()
-
-cityRoom :: Room 'City
+cityRoom :: Room
 cityRoom = Room []
-                ()
                 background
                 (imageSize regions)
                 (buildNavMesh regions)
@@ -37,6 +33,9 @@ cityRoom = Room []
              <||> mkHotspot regions (== 96) door
                 )
                 0.5
+                defOnRoomTick
+                defOnRoomEnter
+                defOnRoomLeave
 
 door :: Hotspot
 door = def

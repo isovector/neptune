@@ -25,12 +25,8 @@ regions :: Image PixelRGBA8
 regions = unsafeLoadDataPng $ base </> "Regions"
 
 
-instance HasRoom 'Study where
-  type RoomModel 'Study = ()
-
-studyRoom :: Room 'Study
+studyRoom :: Room
 studyRoom = Room [SomeActor charles]
-                 ()
                  background
                  (imageSize regions)
                  (buildNavMesh regions)
@@ -39,6 +35,9 @@ studyRoom = Room [SomeActor charles]
               <||> mkHotspot regions (== 144) carpet
                  )
                  1
+                defOnRoomTick
+                defOnRoomEnter
+                defOnRoomLeave
 
 door :: Hotspot
 door = def
@@ -65,12 +64,11 @@ carpet = def
        & hotspotId      .~ 144
 
 
-charles :: Actor ()
+charles :: Actor
 charles = Actor (V2 2900 250)
                 Nothing
                 Nothing
                 (const $ pure . useDefaultZOrdering)
-                ()
                 0
         . translate 0 150
         . color (makeColor 0 0 1 1)

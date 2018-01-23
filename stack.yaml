@@ -8,6 +8,8 @@ extra-deps:
   - gloss-juicy-0.2.2
   - non-empty-zipper-0.1.0.7
   - astar-0.3.0.0
+  - hs-duktape-0.1.5
+  - ecstasy-0.1.0.0
 
 flags: {}
 

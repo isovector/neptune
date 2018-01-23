@@ -18,25 +18,18 @@ screen :: Display
 screen = InWindow "ward" (640, 480) (1000,1000)
 
 
-mainChar :: Actor Float
+mainChar :: Actor
 mainChar = Actor (V2 1200 200)
                  Nothing
                  Nothing
                  tickAvatar
-                 3
                  0
          . translate 0 350
          . color (makeColor 1 0 0 1)
          $ rectangleSolid 300 700
   where
-    tickAvatar dt (useDefaultZOrdering -> me) = do
-      let state = me ^. actorState
-      case state <= 0 of
-        True -> do
-          trace "three seconds!"
-          pure $ me & actorState .~ 3
-        False ->
-          pure $ me & actorState -~ dt
+    tickAvatar _ (useDefaultZOrdering -> me) =
+      pure me
 
 
 genesis :: System

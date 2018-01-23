@@ -12,7 +12,7 @@ import           Control.Monad.Writer                       (runWriter, tell)
 import           Types
 
 
-pumpMotion :: Time -> SomeRoom -> Actor s -> Game (Actor s)
+pumpMotion :: Time -> SomeRoom -> Actor -> Game Actor
 pumpMotion dt room a =
   case view motion' a of
     Nothing -> pure a

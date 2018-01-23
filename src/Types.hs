@@ -121,12 +121,11 @@ data GameState = GameState
 
 ------------------------------------------------------------------------------
 -- | Actor with internal state 's'.
-data Actor s = Actor
+data Actor = Actor
   { _actorPos'       :: Pos
   , _motion'         :: Maybe Motion
-  , _onActorInteract :: Maybe (Actor s -> Verb -> Game (Actor s))
-  , _onActorTick     :: Time -> Actor s -> Game (Actor s)
-  , _actorState      :: s
+  , _onActorInteract :: Maybe (Actor -> Verb -> Game Actor)
+  , _onActorTick     :: Time -> Actor -> Game Actor
   , _actorZIndex     :: Int
   , _actorGraphics'  :: Picture
   }
@@ -181,7 +180,7 @@ data NavMesh = NavMesh
 ------------------------------------------------------------------------------
 -- | Existentialized 'Actor'.
 data SomeActor where
-  SomeActor :: { unSomeActor :: Actor s } -> SomeActor
+  SomeActor :: { unSomeActor :: Actor } -> SomeActor
 
 
 ------------------------------------------------------------------------------
@@ -202,7 +201,7 @@ type Machine = Coroutine (Request Pos Float) (ReaderT (Pos, SomeRoom) (Writer [G
 ------------------------------------------------------------------------------
 -- | Existential around 'Room' allowing us to pack them together.
 data SomeRoom where
-  SomeRoom :: HasRoom r => !(Room r) -> SomeRoom
+  SomeRoom :: !Room -> SomeRoom
 
 
 ------------------------------------------------------------------------------
@@ -216,30 +215,26 @@ data Rooms
 
 ------------------------------------------------------------------------------
 -- | State of a room.
-data Room r = Room
+data Room = Room
   { _actors'    :: [SomeActor]
-  , _model      :: RoomModel r
   , _layers'    :: !Picture
   , _size'      :: V2 Int
   , _navmesh'   :: !NavMesh
   , _hotspots'  :: Pos -> Maybe Hotspot
   , _roomScale' :: Float
+  , onRoomTick :: Time -> Room -> Game Room
+  , onRoomEnter :: Room -> Game Room
+  , onRoomLeave :: Room -> Game Room
   }
 
+defOnRoomTick :: Time -> Room -> Game Room
+defOnRoomTick = const pure
 
-------------------------------------------------------------------------------
--- | Class describing a room.
-class HasRoom (r :: Rooms) where
-  type RoomModel r
-  onRoomTick :: Time -> Room r -> Game (Room r)
-  onRoomTick = const pure
+defOnRoomEnter :: Room -> Game Room
+defOnRoomEnter = pure
 
-  onRoomEnter :: Room r -> Game (Room r)
-  onRoomEnter = pure
-
-  onRoomLeave :: Room r -> Game (Room r)
-  onRoomLeave = pure
-
+defOnRoomLeave :: Room -> Game Room
+defOnRoomLeave = pure
 
 ------------------------------------------------------------------------------
 
@@ -250,16 +245,8 @@ makeLenses ''System
 
 
 ------------------------------------------------------------------------------
--- | An existentially quantified lens.
---
--- @ExLens' s a = Lens' (forall x. s x) a@
-type ExLens' (s :: k -> *) a =
-  forall f. Functor f => (a -> f a) -> (forall x. (s x) -> f (s x))
-
-
-------------------------------------------------------------------------------
 -- | Lift a 'Lens (Actor s) a' to a 'ExLens s a'.
-liftOverSomeActor :: ExLens' Actor a
+liftOverSomeActor :: Lens' Actor a
                   -> Lens' SomeActor a
 liftOverSomeActor l =
   lens (\(SomeActor actor) -> actor ^. l)
@@ -289,7 +276,7 @@ motion = Motion . const
 
 ------------------------------------------------------------------------------
 -- | Lift a 'Lens (Actor s) a' to a 'ExLens s a'.
-liftOverSomeRoom :: ExLens' Room a
+liftOverSomeRoom :: Lens' Room a
                  -> Lens' SomeRoom a
 liftOverSomeRoom l =
   lens (\(SomeRoom room) -> room ^. l)
