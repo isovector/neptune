@@ -1,0 +1,57 @@
+name:                neptune
+version:             0.1.0.0
+-- synopsis:
+-- description:
+license:             BSD3
+license-file:        LICENSE
+author:              Sandy Maguire
+maintainer:          sandy@sandymaguire.me
+-- copyright:
+category:            Game
+build-type:          Simple
+extra-source-files:  ChangeLog.md
+cabal-version:       >=1.10
+
+executable neptune
+  main-is:             Main.hs
+  ghc-options: -Wall -Werror -threaded -O2 -rtsopts -with-rtsopts=-T
+  default-extensions: FlexibleContexts
+                      FlexibleInstances
+                      MultiParamTypeClasses
+                      ScopedTypeVariables
+                      LambdaCase
+                      RankNTypes
+                      TypeFamilies
+                      DeriveGeneric
+                      DeriveFunctor
+                      TypeApplications
+                      GADTs
+                      StandaloneDeriving
+                      ViewPatterns
+  -- other-modules:
+  -- other-extensions:
+  build-depends:
+      base >=4.9 && <4.10
+    , base-prelude
+    , JuicyPixels
+    , QuickCheck
+    , astar
+    , containers
+    , filepath
+    , gloss
+    , gloss-game
+    , gloss-juicy
+    , hspec
+    , lens
+    , linear
+    , mtl
+    , non-empty-zipper
+    , transformers
+    , unordered-containers
+    , vector
+    , hashable
+    , monad-coroutine
+    , data-default
+    , pointless-fun
+  hs-source-dirs:      src
+  default-language:    Haskell2010

@@ -1,0 +1,15 @@
+resolver: lts-9.0
+
+packages:
+- '.'
+
+extra-deps:
+  - gloss-game-0.3.3.0
+  - gloss-juicy-0.2.2
+  - non-empty-zipper-0.1.0.7
+  - astar-0.3.0.0
+
+flags: {}
+
+extra-package-dbs: []
+
