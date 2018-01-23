@@ -13,6 +13,6 @@ import Types
 
 ------------------------------------------------------------------------------
 -- | Run the existentialized 'Room' tick.
-tickRoom :: Time -> SomeRoom -> Game SomeRoom
-tickRoom dt (SomeRoom room) = SomeRoom <$> onRoomTick room dt room
+tickRoom :: Time -> Room -> Game Room
+tickRoom dt room = onRoomTick room dt room
 

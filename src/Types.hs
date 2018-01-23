@@ -91,9 +91,9 @@ data System = System
   , _mouseState    :: KeyState
   , _cameraPos     :: ViewPos
   , _viewportSize  :: Viewport
-  , _avatar        :: SomeActor
+  , _avatar        :: Actor
   , _clock         :: Time
-  , _rooms         :: !(Map Rooms SomeRoom)
+  , _rooms         :: !(Map Rooms Room)
   , _currentRoomId :: !Rooms
   , _activeHotspot :: Maybe Hotspot
   , _nextVerb      :: Maybe Verb
@@ -105,7 +105,7 @@ instance Default System where
       , _mouseState    = Up
       , _cameraPos     = ViewPos zero
       , _viewportSize  = Viewport zero
-      , _avatar        = SomeActor undefined
+      , _avatar        = undefined
       , _clock         = 0
       , _rooms         = M.empty
       , _currentRoomId = Study
@@ -122,12 +122,12 @@ data GameState = GameState
 ------------------------------------------------------------------------------
 -- | Actor with internal state 's'.
 data Actor = Actor
-  { _actorPos'       :: Pos
+  { _actorPos       :: Pos
   , _motion'         :: Maybe Motion
   , _onActorInteract :: Maybe (Actor -> Verb -> Game Actor)
   , _onActorTick     :: Time -> Actor -> Game Actor
-  , _actorZIndex     :: Int
-  , _actorGraphics'  :: Picture
+  , _actorZ     :: Int
+  , _actorGraphics  :: Picture
   }
 
 
@@ -178,12 +178,6 @@ data NavMesh = NavMesh
 
 
 ------------------------------------------------------------------------------
--- | Existentialized 'Actor'.
-data SomeActor where
-  SomeActor :: { unSomeActor :: Actor } -> SomeActor
-
-
-------------------------------------------------------------------------------
 -- TODO(sandy):
 data Verb
   = Examine
@@ -195,13 +189,8 @@ data Item = Item
   deriving (Eq, Show, Ord)
 
 newtype Motion = Motion (Float -> Machine ())
-type Machine = Coroutine (Request Pos Float) (ReaderT (Pos, SomeRoom) (Writer [GameAction]))
+type Machine = Coroutine (Request Pos Float) (ReaderT (Pos, Room) (Writer [GameAction]))
 
-
-------------------------------------------------------------------------------
--- | Existential around 'Room' allowing us to pack them together.
-data SomeRoom where
-  SomeRoom :: !Room -> SomeRoom
 
 
 ------------------------------------------------------------------------------
@@ -216,12 +205,12 @@ data Rooms
 ------------------------------------------------------------------------------
 -- | State of a room.
 data Room = Room
-  { _actors'    :: [SomeActor]
-  , _layers'    :: !Picture
+  { _actors    :: [Actor]
+  , _layers    :: !Picture
   , _size'      :: V2 Int
-  , _navmesh'   :: !NavMesh
-  , _hotspots'  :: Pos -> Maybe Hotspot
-  , _roomScale' :: Float
+  , _navmesh   :: !NavMesh
+  , _hotspots  :: Pos -> Maybe Hotspot
+  , _roomScale :: Float
   , onRoomTick :: Time -> Room -> Game Room
   , onRoomEnter :: Room -> Game Room
   , onRoomLeave :: Room -> Game Room
@@ -244,25 +233,8 @@ makeLenses ''Room
 makeLenses ''System
 
 
-------------------------------------------------------------------------------
--- | Lift a 'Lens (Actor s) a' to a 'ExLens s a'.
-liftOverSomeActor :: Lens' Actor a
-                  -> Lens' SomeActor a
-liftOverSomeActor l =
-  lens (\(SomeActor actor) -> actor ^. l)
-       (\(SomeActor actor) -> SomeActor . flip (set l) actor)
-
-actorPos :: Lens' SomeActor Pos
-actorPos = liftOverSomeActor actorPos'
-
-actorMotion :: Lens' SomeActor (Maybe Motion)
-actorMotion = liftOverSomeActor motion'
-
-actorGraphics :: Lens' SomeActor Picture
-actorGraphics = liftOverSomeActor actorGraphics'
-
-actorZ :: Lens' SomeActor Int
-actorZ = liftOverSomeActor actorZIndex
+actorMotion :: Lens' Actor (Maybe Motion)
+actorMotion = motion'
 
 
 ------------------------------------------------------------------------------
@@ -273,37 +245,13 @@ avatarMotion m = modifySystem $ avatar . actorMotion ?~ motion m
 motion :: Machine () -> Motion
 motion = Motion . const
 
-
-------------------------------------------------------------------------------
--- | Lift a 'Lens (Actor s) a' to a 'ExLens s a'.
-liftOverSomeRoom :: Lens' Room a
-                 -> Lens' SomeRoom a
-liftOverSomeRoom l =
-  lens (\(SomeRoom room) -> room ^. l)
-       (\(SomeRoom room) -> SomeRoom . flip (set l) room)
-
-actors :: Lens' SomeRoom [SomeActor]
-actors = liftOverSomeRoom actors'
-
-roomSize :: Lens' SomeRoom (V2 Int)
-roomSize = liftOverSomeRoom size'
-
-layers :: Lens' SomeRoom Picture
-layers = liftOverSomeRoom layers'
-
-navmesh :: Lens' SomeRoom NavMesh
-navmesh = liftOverSomeRoom navmesh'
-
-hotspots :: Lens' SomeRoom (Pos -> Maybe Hotspot)
-hotspots = liftOverSomeRoom hotspots'
-
-roomScale :: Lens' SomeRoom Float
-roomScale = liftOverSomeRoom roomScale'
+roomSize :: Lens' Room (V2 Int)
+roomSize = size'
 
 
 ------------------------------------------------------------------------------
 -- | Get the current room out of the system.
-currentRoom :: Lens' System SomeRoom
+currentRoom :: Lens' System Room
 currentRoom =
   lens (\s    -> s ^. rooms . at (s ^. currentRoomId) . to fromJust)
        (\s sr -> s &  rooms . at (s ^. currentRoomId) ?~ sr)

@@ -12,14 +12,14 @@ import           Control.Monad.Writer                       (runWriter, tell)
 import           Types
 
 
-pumpMotion :: Time -> SomeRoom -> Actor -> Game Actor
+pumpMotion :: Time -> Room -> Actor -> Game Actor
 pumpMotion dt room a =
   case view motion' a of
     Nothing -> pure a
     Just m  -> do
-      let (pos, m', as) = runMotion dt m (view actorPos' a) room
+      let (pos, m', as) = runMotion dt m (view actorPos a) room
       tell as
-      pure $ a & actorPos' .~ pos
+      pure $ a & actorPos .~ pos
                & motion' .~ m'
 
 emit :: GameAction -> Machine ()
@@ -54,7 +54,7 @@ velBezier velocity v2s = do
   pos <- lift $ asks fst
   runBezier (bezierLength (fmap fromIntegral <$> pos : v2s) / velocity) v2s
 
-runMotion :: Float -> Motion -> Pos -> SomeRoom -> (Pos, Maybe Motion, [GameAction])
+runMotion :: Float -> Motion -> Pos -> Room -> (Pos, Maybe Motion, [GameAction])
 runMotion dt (Motion m) pos room =
   case runWriter . flip runReaderT (pos, room) . resume $ m dt of
     (Left (Request v2 c), as) -> (v2, Just $ Motion c, as)

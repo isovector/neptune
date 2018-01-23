@@ -39,13 +39,13 @@ mkHotspot img f h = bool Nothing (Just h)
 
 ------------------------------------------------------------------------------
 -- | Update the active hotspots.
-tickHotspots :: Lens' System SomeActor -> Game ()
+tickHotspots :: Lens' System Actor -> Game ()
 tickHotspots l = do
   s <- ask
   case view l s of
-    SomeActor actor ->
+    actor ->
       case ( view activeHotspot s
-          , view (currentRoom . hotspots) s $ _actorPos' actor
+          , view (currentRoom . hotspots) s $ _actorPos actor
           ) of
         (Just hs, Just hs') | hs /= hs'
                            -> _onHotspotLeave hs

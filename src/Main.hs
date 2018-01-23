@@ -34,11 +34,11 @@ mainChar = Actor (V2 1200 200)
 
 genesis :: System
 genesis = def
-        & avatar        .~ SomeActor mainChar
+        & avatar        .~ mainChar
         & currentRoomId .~ CostumeShop
-        & rooms         .~ [ (Study,       SomeRoom studyRoom)
-                           , (City,        SomeRoom cityRoom)
-                           , (CostumeShop, SomeRoom costumeRoom)
+        & rooms         .~ [ (Study,       studyRoom)
+                           , (City,        cityRoom)
+                           , (CostumeShop, costumeRoom)
                            ]
         & cameraPos     .~ ViewPos zero
 
@@ -74,7 +74,7 @@ drawGame s = pure
     camera = s ^. cameraPos . _Wrapped' . to (fmap fromIntegral) . from v2tuple
 
 
-drawActor :: Float -> SomeActor -> (Int, Picture)
+drawActor :: Float -> Actor -> (Int, Picture)
 drawActor size sa = (view actorZ sa, )
                   . uncurry translate
                             (worldPos ^. to (fmap fromIntegral) . from v2tuple)

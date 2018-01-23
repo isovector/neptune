@@ -26,7 +26,7 @@ regions = unsafeLoadDataPng $ base </> "Regions"
 
 
 studyRoom :: Room
-studyRoom = Room [SomeActor charles]
+studyRoom = Room [charles]
                  background
                  (imageSize regions)
                  (buildNavMesh regions)
