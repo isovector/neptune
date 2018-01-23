@@ -108,3 +108,7 @@ passes Wendy, Angelo's assistant.
 
 Down the hallway is the doors to KIMBERLY's and JAMES' offices.
 
+[reiterate that we need to talk to the intern and convince him to write the
+report for us. unfortunately when we meet him, he says his boss has him on this
+super important project. we must convince the boss.]
+
