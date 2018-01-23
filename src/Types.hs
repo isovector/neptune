@@ -56,6 +56,7 @@ data NavTarget
 data EntWorld f = Entity
   { pos      :: Component f 'Field Pos
   , pathing  :: Component f 'Field NavTarget
+  , speed    :: Component f 'Field Float
   , gfx      :: Component f 'Field Picture
   , isAvatar :: Component f 'Unique ()
   } deriving (Generic)

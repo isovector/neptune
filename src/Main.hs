@@ -4,7 +4,6 @@
 
 module Main where
 
-import Actors
 import Graphics.Gloss.Interface.IO.Game (playIO)
 import Data.Ecstasy hiding (System)
 import Graphics.Gloss
@@ -23,14 +22,11 @@ mainChar :: Actor
 mainChar = Actor (V2 1200 200)
                  Nothing
                  Nothing
-                 tickAvatar
+                 (const pure)
                  0
          . translate 0 350
          . color (makeColor 1 0 0 1)
          $ rectangleSolid 300 700
-  where
-    tickAvatar _ (useDefaultZOrdering -> me) =
-      pure me
 
 
 genesis :: System
@@ -53,6 +49,8 @@ main = do
                   . translate 0 150
                   . color (makeColor 0 0 1 1)
                   $ circleSolid 150
+            , speed = Just 500
+            , pathing = Just $ Following [V2 0 0]
             }
 
   playIO screen
