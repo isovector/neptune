@@ -70,14 +70,15 @@ mouseToView s mm = (mm ^* viewportScalingFactorInverse (view viewportSize s))
 
 ------------------------------------------------------------------------------
 -- | Top-level update.
-update :: G.Event -> System -> IO System
-update e s = do
+update :: G.Event -> MyState -> IO MyState
+update e (s, w) = do
   let (action, s') = fromMaybe (Nothing, s)
                    . fmap (flip systemUpdate s)
                    $ asSystem e
-  runGame s' $ case action of
-    Just (Click pos) -> doClick pos >> pure s'
-    _                -> pure s'
+  fmap (, w) . runGame s' $
+    case action of
+      Just (Click pos) -> doClick pos >> pure s'
+      _                -> pure s'
 
 
 ------------------------------------------------------------------------------
@@ -87,8 +88,7 @@ doClick pos = do
   s <- ask
   let next = view nextVerb s
   fromMaybe (pure ()) . getFirst
-                      . mconcat
-                      $ fmap First
+                      $ foldMap First
     [ case (&& isNothing next) . flip isWalkable pos
                                $ s ^. currentRoom . navmesh of
         True  -> Just . modifySystem $ avatar . actorMotion ?~ motion (navigateTo 500 pos)

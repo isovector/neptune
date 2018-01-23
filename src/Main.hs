@@ -6,6 +6,7 @@ module Main where
 
 import Actors
 import Graphics.Gloss.Interface.IO.Game (playIO)
+import Data.Ecstasy hiding (System)
 import Graphics.Gloss
 import System
 import Types
@@ -44,34 +45,54 @@ genesis = def
 
 
 main :: IO ()
-main = playIO screen
-              black
-              60
-              genesis
-              drawGame
-              update
-              tick
+main = do
+  s' <- execGame' (genesis, (0, defWorld)) $ do
+          void $ newEntity $ defEntity
+            { pos = Just $ V2 2424 $ 2048 - 1048
+            , gfx = Just
+                  . translate 0 150
+                  . color (makeColor 0 0 1 1)
+                  $ circleSolid 150
+            }
+
+  playIO screen
+         black
+         60
+         s'
+         drawGame
+         update
+         tick
 
 
-drawGame :: System -> IO Picture
-drawGame s = pure
-           . scaleToView s
-           . uncurry translate (-camera)
-           . pictures
-           $ roomPic
-           : [acts]
+drawGame :: MyState -> IO Picture
+drawGame ms@(s, _) = evalGame' ms $ do
+  gfxs <- efor . const $
+    (,) <$> get pos <*> get gfx
+
+  pure . scaleToView s
+       . uncurry translate (-camera)
+       . pictures
+       $ roomPic
+       : [acts gfxs]
   where
     room = s ^. currentRoom
     size = room ^. roomScale
-    acts = pictures
-         . fmap snd
-         . sortBy (comparing fst)
-         . fmap (drawActor size)
-         $ toListOf (avatar <> currentRoom . actors . traverse) s
+    acts gfxs = pictures
+              . (++ fmap (uncurry $ drawGfx size) gfxs)
+              . fmap snd
+              . sortBy (comparing fst)
+              . fmap (drawActor size)
+              $ toListOf (avatar <> currentRoom . actors . traverse) s
     roomPic = uncurry translate
                       (room ^. roomSize  . to (fmap $ (/2) . fromIntegral) . from v2tuple)
             $ room ^. layers
     camera = s ^. cameraPos . _Wrapped' . to (fmap fromIntegral) . from v2tuple
+
+
+drawGfx :: Float -> Pos -> Picture -> Picture
+drawGfx size worldPos pic =
+  uncurry translate (worldPos ^. to (fmap fromIntegral) . from v2tuple)
+    $ scale size size pic
 
 
 drawActor :: Float -> Actor -> (Int, Picture)

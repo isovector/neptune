@@ -1,4 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE TupleSections     #-}
 
 module Tick
   ( tick
@@ -14,8 +15,8 @@ import Viewport
 
 ------------------------------------------------------------------------------
 -- | Update the 'System' with some delta 'Time'.
-tick :: Float -> System -> IO System
-tick dt = flip runSystem $ do
+tick :: Float -> MyState -> IO MyState
+tick dt (s, w) = fmap (, w) . runSystem s $ do
   room <- gets $ view currentRoom
   clock += dt
   avatar %~~ tickActor dt room

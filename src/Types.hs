@@ -3,6 +3,7 @@
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE PolyKinds                  #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TupleSections              #-}
 
 module Types
   ( module Types
@@ -22,7 +23,6 @@ module Types
   , module Data.Function.Pointless
   ) where
 
-import           Data.Default
 import           BasePrelude hiding ((&), trace, rotate, resolution, Down, loop)
 import           Codec.Picture
 import           Control.Lens hiding (index, lazy, uncons)
@@ -31,6 +31,11 @@ import           Control.Monad.Coroutine.SuspensionFunctors hiding (Reader)
 import           Control.Monad.Trans (lift)
 import           Control.Monad.Trans.Reader
 import           Control.Monad.Writer (Writer, tell)
+import           Control.Monad.State (StateT (..))
+import           Data.Default
+import qualified Data.Ecstasy as E
+import           Data.Ecstasy hiding (System)
+import           Data.Function.Pointless
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import qualified Debug.Trace as DT
@@ -38,11 +43,49 @@ import           Graphics.Gloss hiding (line)
 import           Graphics.Gloss.Game (KeyState (..))
 import           Linear.V2
 import           Linear.Vector
-import           Data.Function.Pointless
 
 
 showTrace :: Show a => a -> a
 showTrace = DT.trace =<< show
+
+data NavTarget
+  = NavTo Pos
+  | Following [Pos]
+  deriving (Show)
+
+data EntWorld f = Entity
+  { pos      :: Component f 'Field Pos
+  , pathing  :: Component f 'Field NavTarget
+  , gfx      :: Component f 'Field Picture
+  , isAvatar :: Component f 'Unique ()
+  } deriving (Generic)
+
+deriving instance Show (EntWorld 'WorldOf)
+
+type Game' = E.SystemT EntWorld (StateT System IO)
+type MyState = (System, SystemState EntWorld)
+
+runGame'
+    :: MyState
+    -> Game' a
+    -> IO (MyState, a)
+runGame' (s, w) m = do
+  ((w', a), s') <- flip runStateT s
+                 $ yieldSystemT w m
+  pure ((s', w'), a)
+
+
+execGame'
+    :: MyState
+    -> Game' a
+    -> IO (MyState)
+execGame' = (fmap fst .) . runGame'
+
+evalGame'
+    :: MyState
+    -> Game' a
+    -> IO a
+evalGame' = (fmap snd .) . runGame'
 
 
 ------------------------------------------------------------------------------
@@ -71,10 +114,14 @@ changeRoom = tell . pure .: ChangeRoom
 
 ------------------------------------------------------------------------------
 -- | A position in view space.
-newtype ViewPos = ViewPos { unViewPos :: Pos } deriving (Generic, Num, Show, Eq, Ord)
+newtype ViewPos = ViewPos
+  { unViewPos :: Pos
+  } deriving (Generic, Num, Show, Eq, Ord)
 instance Wrapped ViewPos
 
-newtype Viewport = Viewport { unViewport :: Pos } deriving (Generic, Num, Show, Eq, Ord)
+newtype Viewport = Viewport
+  { unViewport :: Pos
+  } deriving (Generic, Num, Show, Eq, Ord)
 instance Wrapped Viewport
 
 
@@ -98,6 +145,9 @@ data System = System
   , _activeHotspot :: Maybe Hotspot
   , _nextVerb      :: Maybe Verb
   }
+
+instance Show System where
+  show _ = "System"
 
 instance Default System where
   def                  = System

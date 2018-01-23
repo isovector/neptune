@@ -14,7 +14,7 @@ cabal-version:       >=1.10
 
 executable neptune
   main-is:             Main.hs
-  ghc-options: -Wall -Werror -threaded -O2 -rtsopts -with-rtsopts=-T
+  ghc-options: -Wall -threaded -O2 -rtsopts -with-rtsopts=-T
   default-extensions: FlexibleContexts
                       FlexibleInstances
                       MultiParamTypeClasses
