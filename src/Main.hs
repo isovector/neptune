@@ -49,8 +49,9 @@ main = do
                   . translate 0 150
                   . color (makeColor 0 0 1 1)
                   $ circleSolid 150
-            , speed = Just 500
-            , pathing = Just $ Following [V2 0 0]
+            , speed = Just 300
+            , pathing = Just $ Following [V2 6100 0]
+            , hasFocus = Just ()
             }
 
   playIO screen

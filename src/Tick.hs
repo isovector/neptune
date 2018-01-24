@@ -22,20 +22,22 @@ tick :: Float -> MyState -> IO MyState
 tick dt ms@(s, _) = do
   ((_, w'), s') <- runGame' ms $ do
     emap $ do
-      p <- get pos
+      p                 <- get pos
       Following (g : _) <- get pathing
-      sp <- get speed
+      sp                <- get speed
       pure $ defEntity'
         { pos = Set $ p + fmap round (normalize (fmap fromIntegral $ g - p) ^* (sp * dt))
         }
 
-    liftIO . runSystem s $ do
-      room <- gets $ view currentRoom
-      clock += dt
-      avatar %~~ tickActor dt room
-      av      <- gets $ view avatar
-      cameraPos .= focusCamera (room ^. roomSize) virtualView (av ^. actorPos)
+    focus <- fmap (fromMaybe zero . listToMaybe) . efor . const $ do
+      with hasFocus
+      get pos
 
+    liftIO . runSystem s $ do
+      room      <- gets $ view currentRoom
+      clock     += dt
+      avatar   %~~ tickActor dt room
+      cameraPos .= focusCamera (room ^. roomSize) virtualView focus
 
       currentRoom . actors . traverse %~~ tickActor dt room
       lift $ tickHotspots avatar

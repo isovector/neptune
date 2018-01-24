@@ -59,6 +59,7 @@ data EntWorld f = Entity
   , speed    :: Component f 'Field Float
   , gfx      :: Component f 'Field Picture
   , isAvatar :: Component f 'Unique ()
+  , hasFocus :: Component f 'Unique ()
   } deriving (Generic)
 
 deriving instance Show (EntWorld 'WorldOf)
