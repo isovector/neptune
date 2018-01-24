@@ -19,14 +19,14 @@ screen = InWindow "ward" (640, 480) (1000,1000)
 
 
 mainChar :: Actor
-mainChar = Actor (V2 1200 200)
+mainChar = Actor (V2 120 20)
                  Nothing
                  Nothing
                  (const pure)
                  0
-         . translate 0 350
+         . translate 0 35
          . color (makeColor 1 0 0 1)
-         $ rectangleSolid 300 700
+         $ rectangleSolid 30 70
 
 
 genesis :: System
@@ -44,13 +44,13 @@ main :: IO ()
 main = do
   s' <- execGame' (genesis, (0, defWorld)) $ do
           void $ newEntity $ defEntity
-            { pos = Just $ V2 2424 $ 2048 - 1048
+            { pos = Just $ V2 120 20
             , gfx = Just
-                  . translate 0 150
+                  . translate 0 15
                   . color (makeColor 0 0 1 1)
-                  $ circleSolid 150
-            , speed = Just 300
-            , pathing = Just $ Following [V2 6100 0]
+                  $ circleSolid 15
+            , speed = Just 50
+            , pathing = Just $ NavTo $ V2 400 20
             , hasFocus = Just ()
             }
 
@@ -68,8 +68,12 @@ drawGame ms@(s, _) = evalGame' ms $ do
   gfxs <- efor . const $
     (,) <$> get pos <*> get gfx
 
+  focus <- fmap (fromMaybe zero . listToMaybe) . efor . const $ do
+    with hasFocus
+    get pos
+
   pure . scaleToView s
-       . uncurry translate (-camera)
+       . uncurry translate (negate $ camera focus)
        . pictures
        $ roomPic
        : [acts gfxs]
@@ -85,7 +89,10 @@ drawGame ms@(s, _) = evalGame' ms $ do
     roomPic = uncurry translate
                       (room ^. roomSize  . to (fmap $ (/2) . fromIntegral) . from v2tuple)
             $ room ^. layers
-    camera = s ^. cameraPos . _Wrapped' . to (fmap fromIntegral) . from v2tuple
+    camera focus = focusCamera (room ^. roomSize) virtualView focus
+                ^. _Wrapped'
+                 . to (fmap fromIntegral)
+                 . from v2tuple
 
 
 drawGfx :: Float -> Pos -> Picture -> Picture

@@ -15,7 +15,7 @@ import Types
 ------------------------------------------------------------------------------
 -- | The size of the virtual screen.
 virtualView :: V2 Int
-virtualView = V2 4096 2048
+virtualView = V2 613 205
 
 
 scaleWithin :: V2 Int -> V2 Int -> Float

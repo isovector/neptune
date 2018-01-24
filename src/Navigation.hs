@@ -33,7 +33,8 @@ buildNavMesh :: Image PixelRGBA8 -> NavMesh
 buildNavMesh img = NavMesh {..}
   where
     navigate (clampToWorld . fmap fromIntegral -> a)
-             (clampToWorld . fmap fromIntegral -> b) = smoothPath img a b . fmap (worldSpace h) <$>
+             (clampToWorld . fmap fromIntegral -> b) = smoothPath img a b
+                                                     . fmap (worldSpace h) <$>
       let nava = navSpace h a
           navb = navSpace h b
       in if nava == navb && not (canWalkOn img nava)
@@ -84,7 +85,11 @@ smoothPath img src dst path =
 
 
 navBounds :: Image a -> V2 Node
-navBounds = subtract 1 . fmap (Node . floor) . (^/ resolution) . fmap fromIntegral . imageSize
+navBounds = subtract 1
+          . fmap (Node . floor)
+          . (^/ resolution)
+          . fmap fromIntegral
+          . imageSize
 
 ------------------------------------------------------------------------------
 -- | Compute a walkability sweep by quantizing points on the sweep line to the
@@ -136,5 +141,5 @@ imgSpace = round . (* resolution) . fromIntegral . unNode
 ------------------------------------------------------------------------------
 -- | The resolution at which we sample an image for navigation points.
 resolution :: Float
-resolution = 32
+resolution = 3.2
 
