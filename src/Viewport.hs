@@ -6,6 +6,7 @@ module Viewport
   , viewportScalingFactor
   , getViewport
   , getRoomPicture
+  , screenToWorld
   ) where
 
 import Types
@@ -46,6 +47,11 @@ getRoomPicture room =
    in uncurry translate ((centerOff & _y *~ -1) ^. from v2tuple)
       $ view layers room
 
+screenToWorld :: Pos -> Game Pos
+screenToWorld v2 = do
+    vp <- getViewport
+    pure $ _y *~ -1
+         $ invertViewPort vp (v2 ^. from v2tuple) ^. v2tuple
 
 getViewport :: Game ViewPort
 getViewport = do
@@ -60,5 +66,7 @@ getViewport = do
       camera = focusCamera size virtualView focus
 
   pure $ vp
-       { viewPortTranslate = negate $ (camera & _y *~ -1) ^. from v2tuple
+       { viewPortTranslate =
+           negate $ (camera & _y *~ -1) ^. from v2tuple
        }
+

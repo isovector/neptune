@@ -36,7 +36,7 @@ main :: IO ()
 main = do
   s' <- execGame (defGlobals, (0, defWorld)) $ do
           void $ newEntity $ defEntity
-            { pos = Just $ V2 0 0
+            { pos = Just $ V2 135 176
             , gfx = Just
                   . translate 0 15
                   . color (makeColor 0 0 1 1)

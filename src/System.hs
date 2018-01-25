@@ -6,11 +6,6 @@ module System
   ( update
   ) where
 
-import           Control.Monad.Trans        (lift)
-import           Control.Monad.Trans.Reader (runReaderT)
-import           Control.Monad.Trans.State  (StateT (..), execStateT, get,
-                                             modify, put)
-import           Control.Monad.Writer       (runWriter)
 import           Graphics.Gloss.Game        (KeyState)
 import qualified Graphics.Gloss.Game        as G
 import           Types
@@ -18,7 +13,7 @@ import           Viewport
 
 
 data SystemEvent
-  = Resize      !Pos
+  = Resize      !(V2 Int)
   | MouseMove   !Pos
   | MouseButton !KeyState
   | SetVerb     !Verb
@@ -32,7 +27,7 @@ data SystemAction
 -- | Turn an underlying Gloss event into a system event.
 asSystem :: G.Event -> Maybe SystemEvent
 asSystem = \case
-    G.EventResize v -> Nothing -- Just . Resize    $ v ^. v2tuple . from _Wrapped'
+    G.EventResize v -> Just . Resize    $ v ^. v2tuple
     G.EventMotion v -> Just . MouseMove $ v ^. v2tuple
     G.EventKey (G.MouseButton G.LeftButton) x _ _ -> Just $ MouseButton x
     G.EventKey (G.Char 'e') _ _ _ -> Just $ SetVerb Examine
@@ -61,14 +56,19 @@ asSystem = \case
 ------------------------------------------------------------------------------
 -- | Top-level update.
 update :: G.Event -> GameState -> IO GameState
-update _ ms  = pure ms
-  -- let (action, s') = fromMaybe (Nothing, s)
-  --                  . fmap (flip systemUpdate s)
-  --                  $ asSystem e
-  -- fmap (, w) . runGame s' $
-  --   case action of
-  --     Just (Click pos) -> doClick pos >> pure s'
-  --     _                -> pure s'
+update e =
+  flip execGame . for_ (asSystem e) $ \case
+    MouseMove v2 -> do
+      wp <- screenToWorld v2
+      setGlobals $ mousePos .~ wp
+
+    Resize v2 -> do
+      setGlobals $ \gs ->
+        gs & viewport %~ \vp ->
+          vp { viewPortScale = viewportScalingFactor v2
+             }
+
+    Exit -> error "bye felicia"
 
 
 --------------------------------------------------------------------------------
