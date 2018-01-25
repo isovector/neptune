@@ -19,7 +19,7 @@ import qualified Data.Vector as V
 import           Linear.Metric (distance, normalize)
 import           Linear.V2 (V2 (..), _x, _y)
 import           Linear.Vector
-import           Types hiding (trace)
+import           Types
 
 
 newtype Node = Node { unNode :: Int } deriving (Num, Integral, Enum, Real, Eq, Ord, Hashable, Show)
@@ -32,9 +32,9 @@ newtype Img  = Img  { unImg  :: Int } deriving (Num, Integral, Enum, Real, Eq, O
 buildNavMesh :: Image PixelRGBA8 -> NavMesh
 buildNavMesh img = NavMesh {..}
   where
-    navigate (clampToWorld . fmap fromIntegral -> a)
-             (clampToWorld . fmap fromIntegral -> b) = smoothPath img a b
-                                                     . fmap (worldSpace h) <$>
+    navigate (clampToWorld -> a)
+             (clampToWorld -> b) = smoothPath img a b
+                                 . fmap (worldSpace h) <$>
       let nava = navSpace h a
           navb = navSpace h b
       in if nava == navb && not (canWalkOn img nava)
@@ -46,7 +46,7 @@ buildNavMesh img = NavMesh {..}
                         nava
 
     clampToWorld = clamp (V2 0 0) (fmap fromIntegral $ imageSize img - 1)
-    isWalkable = canWalkOn img . navSpace h . clampToWorld . fmap fromIntegral
+    isWalkable = canWalkOn img . navSpace h . clampToWorld
 
     -- The (exclusive) max for width and height of a stage.
     w, h :: Node
@@ -75,7 +75,7 @@ buildNavMesh img = NavMesh {..}
 smoothPath :: Image PixelRGBA8 -> V2 Float -> V2 Float -> [V2 Float] -> [Pos]
 smoothPath img src dst path =
     let v = V.fromList $ (src : path) ++ [dst]
-     in fmap round <$> go 0 (V.length v - 1) v
+     in go 0 (V.length v - 1) v
   where
     go l u v =
       if sweepWalkable img (v V.! l) (v V.! u)

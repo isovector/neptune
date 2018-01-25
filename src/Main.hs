@@ -15,42 +15,34 @@ import Viewport
 
 
 screen :: Display
-screen = InWindow "ward" (640, 480) (1000,1000)
+screen = InWindow "ward" (640, 480) (0, 0)
 
 
-mainChar :: Actor
-mainChar = Actor (V2 120 20)
-                 Nothing
-                 Nothing
-                 (const pure)
-                 0
-         . translate 0 35
-         . color (makeColor 1 0 0 1)
-         $ rectangleSolid 30 70
-
-
-genesis :: System
-genesis = def
-        & avatar        .~ mainChar
-        & currentRoomId .~ CostumeShop
-        & rooms         .~ [ (Study,       studyRoom)
-                           , (City,        cityRoom)
-                           , (CostumeShop, costumeRoom)
-                           ]
-        & cameraPos     .~ ViewPos zero
+defGlobals :: Globals
+defGlobals = Globals
+  { _rooms = [ (Study,       studyRoom)
+             , (City,        cityRoom)
+             , (CostumeShop, costumeRoom)
+             ]
+  , _currentRoomId = CostumeShop
+  , _mousePos      = zero
+  , _mouseState    = Up
+  , _viewport      = viewPortInit
+  , _nextVerb      = Nothing
+  }
 
 
 main :: IO ()
 main = do
-  s' <- execGame' (genesis, (0, defWorld)) $ do
+  s' <- execGame (defGlobals, (0, defWorld)) $ do
           void $ newEntity $ defEntity
-            { pos = Just $ V2 120 20
+            { pos = Just $ V2 0 0
             , gfx = Just
                   . translate 0 15
                   . color (makeColor 0 0 1 1)
                   $ circleSolid 15
             , speed = Just 50
-            , pathing = Just $ NavTo $ V2 400 20
+            -- , pathing = Just $ NavTo $ V2 400 20
             , hasFocus = Just ()
             }
 
@@ -63,49 +55,24 @@ main = do
          tick
 
 
-drawGame :: MyState -> IO Picture
-drawGame ms@(s, _) = evalGame' ms $ do
+drawGame :: GameState -> IO Picture
+drawGame ms = evalGame ms $ do
+  room <- getGlobals $ view currentRoom
+  vp   <- getViewport
   gfxs <- efor . const $
-    (,) <$> get pos <*> get gfx
+    (,) <$> fmap (_y *~ -1) (get pos)
+        <*> get gfx
+  let pic = getRoomPicture room
 
-  focus <- fmap (fromMaybe zero . listToMaybe) . efor . const $ do
-    with hasFocus
-    get pos
-
-  pure . scaleToView s
-       . uncurry translate (negate $ camera focus)
+  let size = room ^. roomScale
+  pure . applyViewPortToPicture vp
        . pictures
-       $ roomPic
-       : [acts gfxs]
-  where
-    room = s ^. currentRoom
-    size = room ^. roomScale
-    acts gfxs = pictures
-              . (++ fmap (uncurry $ drawGfx size) gfxs)
-              . fmap snd
-              . sortBy (comparing fst)
-              . fmap (drawActor size)
-              $ toListOf (avatar <> currentRoom . actors . traverse) s
-    roomPic = uncurry translate
-                      (room ^. roomSize  . to (fmap $ (/2) . fromIntegral) . from v2tuple)
-            $ room ^. layers
-    camera focus = focusCamera (room ^. roomSize) virtualView focus
-                ^. _Wrapped'
-                 . to (fmap fromIntegral)
-                 . from v2tuple
+       $ pic
+       : fmap (uncurry $ drawGfx size) gfxs
 
 
 drawGfx :: Float -> Pos -> Picture -> Picture
 drawGfx size worldPos pic =
-  uncurry translate (worldPos ^. to (fmap fromIntegral) . from v2tuple)
+  uncurry translate (worldPos ^. from v2tuple)
     $ scale size size pic
 
-
-drawActor :: Float -> Actor -> (Int, Picture)
-drawActor size sa = (view actorZ sa, )
-                  . uncurry translate
-                            (worldPos ^. to (fmap fromIntegral) . from v2tuple)
-                  . scale size size
-                  $ view actorGraphics sa
-  where
-    worldPos = sa ^. actorPos
