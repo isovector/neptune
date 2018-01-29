@@ -31,7 +31,6 @@ defGlobals = Globals
   , _mousePos      = zero
   , _mouseState    = Up
   , _viewport      = viewPortInit
-  , _nextVerb      = Nothing
   , _timers        = M.empty
   , _gInputDFA     = IStart
   }
@@ -80,12 +79,13 @@ drawGame ms = evalGame ms $ do
        $ [pic]
       ++ fmap (uncurry $ drawGfx size) gfxs
       ++ case coin of
-           ICoinOpen pos _ -> [translate' pos coinPic]
+           ICoinOpen p _ -> [translate' p coinPic]
            _ -> []
 
 translate' :: Pos -> Picture -> Picture
-translate' pos =
-  uncurry translate (toDrawCoord pos ^. from v2tuple)
+translate' = uncurry translate
+           . view (from v2tuple)
+           . toDrawCoord
 
 drawGfx :: Float -> Pos -> Picture -> Picture
 drawGfx size worldPos =

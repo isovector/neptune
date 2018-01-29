@@ -2,6 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE PolyKinds                  #-}
+{-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TupleSections              #-}
 
@@ -44,6 +45,48 @@ import           Linear.Vector
 
 showTrace :: Show a => a -> a
 showTrace = DT.trace =<< show
+
+data BB = BB
+  { leftX   :: Float
+  , rightX  :: Float
+  , topY    :: Float
+  , bottomY :: Float
+  } deriving (Eq, Ord, Show)
+
+
+rectBB :: Float -> Float -> BB
+rectBB ((/2) -> x) ((/2) -> y) =
+  BB (-x) x (-y) y
+
+
+moveBB :: Pos -> BB -> BB
+moveBB (V2 x y) BB{..} = BB
+  { leftX   = leftX   + x
+  , rightX  = rightX  + x
+  , topY    = topY    + y
+  , bottomY = bottomY + y
+  }
+
+
+inBB :: BB -> Pos -> Bool
+inBB BB{..} (V2 x y) = and
+  [ x >= leftX
+  , x <  rightX
+  , y >= topY
+  , y <  bottomY
+  ]
+
+
+data BBSurface a = BBSurface [(BB, a)]
+  deriving (Eq, Ord, Show)
+
+getBBSurface :: BBSurface a -> Pos -> Maybe a
+getBBSurface (BBSurface bs) p =
+  getFirst . flip foldMap bs $ \(b, a) ->
+    if inBB b p
+       then First $ Just a
+       else First $ Nothing
+
 
 data NavTarget
   = NavTo Pos
@@ -106,7 +149,6 @@ data Globals = Globals
   , _viewport      :: !ViewPort
   , _rooms         :: !(Map Rooms Room)
   , _currentRoomId :: !Rooms
-  , _nextVerb      :: !(Maybe Verb)
   , _timers        :: !(Map TimerType Timer)
   , _gInputDFA     :: !InputDFA
   }
