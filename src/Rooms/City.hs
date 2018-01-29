@@ -23,8 +23,10 @@ regions = unsafeLoadDataPng $ base </> "regions"
 
 
 cityRoom :: Room
-cityRoom = Room background
-                (imageSize regions)
-                (buildNavMesh regions)
-                0.5
+cityRoom =
+  Room background
+       (imageSize regions)
+       (buildNavMesh regions)
+       0.5
+     $ const Nothing
 

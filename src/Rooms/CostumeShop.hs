@@ -6,6 +6,7 @@ module Rooms.CostumeShop
   ( costumeRoom
   ) where
 
+import Hotspots
 import LoadImage
 import Navigation
 import System.FilePath.Posix
@@ -25,9 +26,11 @@ regions :: Image PixelRGBA8
 regions = unsafeLoadDataPng $ base </> "regions"
 
 costumeRoom :: Room
-costumeRoom = Room
-                background
-                (imageSize regions)
-                (buildNavMesh regions)
-                0.75
+costumeRoom =
+  Room background
+       (imageSize regions)
+       (buildNavMesh regions)
+       0.75
+     . mkHotspot regions (== 0x30)
+     $ Hotspot 0x30 "Door" Touch
 

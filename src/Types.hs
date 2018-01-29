@@ -19,6 +19,7 @@ module Types
   , ask
   , asks
   , lift
+  , liftIO
   , module Data.Function.Pointless
   , module Graphics.Gloss.Data.ViewPort
   ) where
@@ -26,6 +27,7 @@ module Types
 import           BasePrelude hiding ((&), trace, rotate, resolution, Down, loop)
 import           Codec.Picture
 import           Control.Lens hiding (index, lazy, uncons, without)
+import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.State (StateT (..), gets, modify)
 import           Control.Monad.Trans (lift)
 import           Control.Monad.Trans.Reader
@@ -105,6 +107,7 @@ data Globals = Globals
   , _rooms         :: !(Map Rooms Room)
   , _currentRoomId :: !Rooms
   , _nextVerb      :: Maybe Verb
+  , _timers        :: !(Map TimerType Timer)
   }
 
 instance Show Globals where
@@ -132,6 +135,15 @@ clamp' :: Ord a => a -> a -> a -> a
 clamp' l u z = min u $ max l z
 
 
+data Timer = Timer
+  { _tTime     :: Time
+  , _tCallback :: Game ()
+  }
+
+data TimerType
+  = TimerCoin
+  deriving (Eq, Ord)
+
 ------------------------------------------------------------------------------
 -- | Navigation mesh.
 data NavMesh = NavMesh
@@ -151,6 +163,10 @@ data Verb
 data Item = Item
   deriving (Eq, Show, Ord)
 
+data InteractionTarget
+  = InteractionHotspot Hotspot
+  | InteractionActor Ent
+
 
 ------------------------------------------------------------------------------
 -- | Datakind describing which rooms we can visit.
@@ -162,18 +178,29 @@ data Rooms
 
 
 ------------------------------------------------------------------------------
+-- | Hotspots
+data Hotspot = Hotspot
+  { _hsId          :: Word8
+  , _hsName        :: String
+  , _hsDefaultVerb :: Verb
+  }
+
+------------------------------------------------------------------------------
 -- | State of a room.
 data Room = Room
   { _layers    :: !Picture
   , _size'     :: !(V2 Int)
   , _navmesh   :: !NavMesh
   , _roomScale :: !Float
+  , _hotspots  :: Pos -> Maybe Hotspot
   }
 
 ------------------------------------------------------------------------------
 
 makeLenses ''Room
 makeLenses ''Globals
+makeLenses ''Hotspot
+makeLenses ''Timer
 
 
 roomSize :: Lens' Room (V2 Int)

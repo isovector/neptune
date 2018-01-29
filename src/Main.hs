@@ -15,7 +15,7 @@ import Viewport
 
 
 screen :: Display
-screen = InWindow "ward" (640, 480) (0, 0)
+screen = InWindow "Neptune" (640, 480) (0, 0)
 
 
 defGlobals :: Globals
@@ -42,8 +42,8 @@ main = do
                   . color (makeColor 0 0 1 1)
                   $ circleSolid 15
             , speed = Just 50
-            -- , pathing = Just $ NavTo $ V2 400 20
             , hasFocus = Just ()
+            , isAvatar = Just ()
             }
 
   playIO screen

@@ -22,9 +22,15 @@ import           Linear.Vector
 import           Types
 
 
-newtype Node = Node { unNode :: Int } deriving (Num, Integral, Enum, Real, Eq, Ord, Hashable, Show)
-newtype Img  = Img  { unImg  :: Int } deriving (Num, Integral, Enum, Real, Eq, Ord, Hashable, Show)
+newtype Node = Node
+  { unNode :: Int
+  }
+  deriving (Num, Integral, Enum, Real, Eq, Ord, Hashable, Show)
 
+newtype Img  = Img
+  { unImg  :: Int
+  }
+  deriving (Num, Integral, Enum, Real, Eq, Ord, Hashable, Show)
 
 
 ------------------------------------------------------------------------------
@@ -123,13 +129,13 @@ canWalkOn img (V2 x y) = flip testBit walkableBit
 ------------------------------------------------------------------------------
 -- | Scale a nav point up to world space.
 worldSpace :: Node -> V2 Node -> V2 Float
-worldSpace y = (^* resolution) . fmap fromIntegral . (_y %~ (y -))
+worldSpace y = (^* resolution) . fmap fromIntegral
 
 
 ------------------------------------------------------------------------------
 -- | Scale a world point down to navigation space.
 navSpace :: Node -> V2 Float -> V2 Node
-navSpace y = (_y %~ (y -)) . fmap (Node . floor) . (^/ resolution)
+navSpace y = fmap (Node . floor) . (^/ resolution)
 
 
 ------------------------------------------------------------------------------

@@ -23,8 +23,10 @@ regions = unsafeLoadDataPng $ base </> "Regions"
 
 
 studyRoom :: Room
-studyRoom = Room background
-                 (imageSize regions)
-                 (buildNavMesh regions)
-                 1
+studyRoom =
+  Room background
+       (imageSize regions)
+       (buildNavMesh regions)
+       1
+     $ const Nothing
 

@@ -56,8 +56,8 @@ asSystem = \case
 ------------------------------------------------------------------------------
 -- | Top-level update.
 update :: G.Event -> GameState -> IO GameState
-update e =
-  flip execGame . for_ (asSystem e) $ \case
+update ge =
+  flip execGame . for_ (asSystem ge) $ \case
     MouseMove v2 -> do
       wp <- screenToWorld v2
       setGlobals $ mousePos .~ wp
@@ -68,8 +68,44 @@ update e =
           vp { viewPortScale = viewportScalingFactor v2
              }
 
+    -- default state
+    MouseButton Down -> do
+      mouse <- getGlobals $ view mousePos
+      getInteractionTarget mouse >>= \case
+        Just (InteractionHotspot hs) ->
+          -- set a timer
+          -- move to a new state
+          --   in that state if you see a mouseUp do nothing
+          --   if the timer finishes, show the coin in a new state
+          --     when you do a mouseUp, check the coordinates on the coin
+          --     and issue that verb
+          liftIO $ print $ _hsDefaultVerb hs
+
+        Just (InteractionActor e) ->
+          liftIO $ print e
+
+        Nothing -> do
+          room <- getGlobals $ view currentRoom
+          let nav = _navmesh room
+          case isWalkable nav mouse of
+            True ->
+              emap $ do
+                with isAvatar
+                pure defEntity'
+                  { pathing = Set $ NavTo mouse
+                  }
+            False -> pure ()
+
+
     Exit -> error "bye felicia"
 
+    _ -> pure ()
+
+
+getInteractionTarget :: Pos -> Game (Maybe InteractionTarget)
+getInteractionTarget p = do
+  room <- getGlobals $ view currentRoom
+  pure $ InteractionHotspot <$> _hotspots room p
 
 --------------------------------------------------------------------------------
 ---- | Handler to manage clicks.
