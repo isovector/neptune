@@ -7,6 +7,7 @@ module Viewport
   , getViewport
   , getRoomPicture
   , screenToWorld
+  , toDrawCoord
   ) where
 
 import Types
@@ -69,4 +70,7 @@ getViewport = do
        { viewPortTranslate =
            negate $ (camera & _y *~ -1) ^. from v2tuple
        }
+
+toDrawCoord :: Pos -> Pos
+toDrawCoord = _y *~ -1
 

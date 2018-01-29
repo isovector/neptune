@@ -9,12 +9,15 @@ import Data.Ecstasy hiding (runSystem)
 -- import Control.Monad.Trans.State (gets)
 import Types
 import Linear.Metric
+import Timers
 
 
 ------------------------------------------------------------------------------
 -- | Update the 'System' with some delta 'Time'.
 tick :: Float -> GameState -> IO GameState
 tick dt ms@(s, _) = execGame ms $ do
+  updateTimers dt
+
   let room = view currentRoom s
   emap $ do
     src       <- get pos

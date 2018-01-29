@@ -4,14 +4,17 @@
 
 module Main where
 
-import Graphics.Gloss.Interface.IO.Game (playIO)
-import Data.Ecstasy hiding (System)
-import Graphics.Gloss
-import System
-import Types
-import Rooms
-import Tick
-import Viewport
+import           Data.Ecstasy hiding (System)
+import qualified Data.Map as M
+import           Graphics.Gloss
+import           Graphics.Gloss.Interface.IO.Game (playIO)
+import           LoadImage
+import           Rooms
+import           System
+import           System.FilePath.Posix
+import           Tick
+import           Types
+import           Viewport
 
 
 screen :: Display
@@ -29,6 +32,8 @@ defGlobals = Globals
   , _mouseState    = Up
   , _viewport      = viewPortInit
   , _nextVerb      = Nothing
+  , _timers        = M.empty
+  , _gInputDFA     = IStart
   }
 
 
@@ -54,25 +59,35 @@ main = do
          update
          tick
 
+coinPic :: Picture
+coinPic = unsafeLoadPng $ "assets" </> "actionbar"
 
 drawGame :: GameState -> IO Picture
 drawGame ms = evalGame ms $ do
   room <- getGlobals $ view currentRoom
+  coin <- getGlobals $ view gInputDFA
+
   vp   <- getViewport
   gfxs <- efor . const $
-    (,) <$> fmap (_y *~ -1) (get pos)
+    (,) <$> get pos
         <*> get gfx
-  let pic = getRoomPicture room
 
-  let size = room ^. roomScale
+  let pic  = getRoomPicture room
+      size = room ^. roomScale
+
   pure . applyViewPortToPicture vp
        . pictures
-       $ pic
-       : fmap (uncurry $ drawGfx size) gfxs
+       $ [pic]
+      ++ fmap (uncurry $ drawGfx size) gfxs
+      ++ case coin of
+           ICoinOpen pos _ -> [translate' pos coinPic]
+           _ -> []
 
+translate' :: Pos -> Picture -> Picture
+translate' pos =
+  uncurry translate (toDrawCoord pos ^. from v2tuple)
 
 drawGfx :: Float -> Pos -> Picture -> Picture
-drawGfx size worldPos pic =
-  uncurry translate (worldPos ^. from v2tuple)
-    $ scale size size pic
+drawGfx size worldPos =
+  translate' worldPos . scale size size
 

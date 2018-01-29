@@ -7,8 +7,8 @@ import           Types
 
 
 -- TODO(sandy): think about whether this should overwrite a timer
-createTimer :: TimerType -> Time -> Game () -> Game ()
-createTimer tt t cb =
+startTimer :: TimerType -> Time -> Game () -> Game ()
+startTimer tt t cb =
   setGlobals $ timers . at tt ?~ Timer t cb
 
 cancelTimer :: TimerType -> Game ()

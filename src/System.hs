@@ -8,6 +8,7 @@ module System
 
 import           Graphics.Gloss.Game        (KeyState)
 import qualified Graphics.Gloss.Game        as G
+import           Timers
 import           Types
 import           Viewport
 
@@ -21,7 +22,6 @@ data SystemEvent
 
 data SystemAction
   = Click Pos
-
 
 ------------------------------------------------------------------------------
 -- | Turn an underlying Gloss event into a system event.
@@ -56,33 +56,34 @@ asSystem = \case
 ------------------------------------------------------------------------------
 -- | Top-level update.
 update :: G.Event -> GameState -> IO GameState
-update ge =
-  flip execGame . for_ (asSystem ge) $ \case
-    MouseMove v2 -> do
+update ge = flip execGame $ do
+  is <- getGlobals $ view gInputDFA
+
+  for_ ((is,) <$> asSystem ge) $ \case
+    (_, MouseMove v2) -> do
       wp <- screenToWorld v2
       setGlobals $ mousePos .~ wp
 
-    Resize v2 -> do
+    (_, Resize v2) -> do
       setGlobals $ \gs ->
         gs & viewport %~ \vp ->
           vp { viewPortScale = viewportScalingFactor v2
              }
 
     -- default state
-    MouseButton Down -> do
+    (IStart, MouseButton Down) -> do
       mouse <- getGlobals $ view mousePos
       getInteractionTarget mouse >>= \case
-        Just (InteractionHotspot hs) ->
+        Just it -> do
           -- set a timer
           -- move to a new state
           --   in that state if you see a mouseUp do nothing
           --   if the timer finishes, show the coin in a new state
           --     when you do a mouseUp, check the coordinates on the coin
           --     and issue that verb
-          liftIO $ print $ _hsDefaultVerb hs
-
-        Just (InteractionActor e) ->
-          liftIO $ print e
+          startTimer TimerCoin 0.5 $ do
+            setGlobals $ gInputDFA .~ ICoinOpen mouse it
+          setGlobals $ gInputDFA .~ IBeforeCoin
 
         Nothing -> do
           room <- getGlobals $ view currentRoom
@@ -96,8 +97,16 @@ update ge =
                   }
             False -> pure ()
 
+    (IBeforeCoin, MouseButton Up) -> do
+      cancelTimer TimerCoin
+      setGlobals $ gInputDFA .~ IStart
 
-    Exit -> error "bye felicia"
+    (ICoinOpen _ _, MouseButton Up) -> do
+      liftIO $ print "i did a coin"
+      setGlobals $ gInputDFA .~ IStart
+
+
+    (_, Exit) -> error "bye felicia"
 
     _ -> pure ()
 

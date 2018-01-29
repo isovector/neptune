@@ -18,12 +18,14 @@ base = "assets" </> "costume"
 
 background :: Picture
 background = unsafeLoadPng $ base </> "background"
+{-# NOINLINE background #-}
 
 -- foreground :: Picture
 -- foreground = unsafeLoadPng $ base </> "foreground"
 
 regions :: Image PixelRGBA8
 regions = unsafeLoadDataPng $ base </> "regions"
+{-# NOINLINE regions #-}
 
 costumeRoom :: Room
 costumeRoom =

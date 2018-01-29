@@ -101,13 +101,14 @@ v2tuple = iso (uncurry V2) $ \(V2 x y) -> (x, y)
 ------------------------------------------------------------------------------
 -- | Core engine state.
 data Globals = Globals
-  { _mousePos      :: Pos
-  , _mouseState    :: KeyState
-  , _viewport      :: ViewPort
+  { _mousePos      :: !Pos
+  , _mouseState    :: !KeyState
+  , _viewport      :: !ViewPort
   , _rooms         :: !(Map Rooms Room)
   , _currentRoomId :: !Rooms
-  , _nextVerb      :: Maybe Verb
+  , _nextVerb      :: !(Maybe Verb)
   , _timers        :: !(Map TimerType Timer)
+  , _gInputDFA     :: !InputDFA
   }
 
 instance Show Globals where
@@ -194,6 +195,11 @@ data Room = Room
   , _roomScale :: !Float
   , _hotspots  :: Pos -> Maybe Hotspot
   }
+
+data InputDFA
+  = IStart
+  | IBeforeCoin
+  | ICoinOpen Pos InteractionTarget
 
 ------------------------------------------------------------------------------
 
