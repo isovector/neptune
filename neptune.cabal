@@ -31,7 +31,7 @@ executable neptune
   -- other-modules:
   -- other-extensions:
   build-depends:
-      base >=4.9 && <4.10
+      base >=4.9 && <5
     , base-prelude
     , JuicyPixels
     , QuickCheck
@@ -45,7 +45,6 @@ executable neptune
     , lens
     , linear
     , mtl
-    , non-empty-zipper
     , transformers
     , unordered-containers
     , vector
@@ -53,7 +52,7 @@ executable neptune
     , monad-coroutine
     , data-default
     , pointless-fun
-    , hs-duktape
     , ecstasy
+    , hslua
   hs-source-dirs:      src
   default-language:    Haskell2010

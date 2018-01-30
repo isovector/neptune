@@ -15,30 +15,35 @@ import           System.FilePath.Posix
 import           Tick
 import           Types
 import           Viewport
+import Scripting
 
 
 screen :: Display
 screen = InWindow "Neptune" (640, 480) (0, 0)
 
 
-defGlobals :: Globals
-defGlobals = Globals
-  { _rooms = [ (Study,       studyRoom)
-             , (City,        cityRoom)
-             , (CostumeShop, costumeRoom)
-             ]
-  , _currentRoomId = CostumeShop
-  , _mousePos      = zero
-  , _mouseState    = Up
-  , _viewport      = viewPortInit
-  , _timers        = M.empty
-  , _gInputDFA     = IStart
-  }
+defGlobals :: IO Globals
+defGlobals = do
+  l <- initLua
+  pure $ Globals
+    { _rooms = [ (Study,       studyRoom)
+              , (City,        cityRoom)
+              , (CostumeShop, costumeRoom)
+              ]
+    , _currentRoomId = CostumeShop
+    , _mousePos      = zero
+    , _mouseState    = Up
+    , _viewport      = viewPortInit
+    , _timers        = M.empty
+    , _gInputDFA     = IStart
+    , _gLuaState     = l
+    }
 
 
 main :: IO ()
 main = do
-  s' <- execGame (defGlobals, (0, defWorld)) $ do
+  g <- defGlobals
+  s' <- execGame (g, (0, defWorld)) $ do
           void $ newEntity $ defEntity
             { pos = Just $ V2 135 176
             , gfx = Just

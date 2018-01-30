@@ -36,6 +36,7 @@ import           Data.Ecstasy
 import           Data.Function.Pointless
 import           Data.Map.Strict (Map)
 import qualified Debug.Trace as DT
+import           Foreign.Lua (LuaState)
 import           Graphics.Gloss hiding (line)
 import           Graphics.Gloss.Data.ViewPort
 import           Graphics.Gloss.Game (KeyState (..))
@@ -151,6 +152,7 @@ data Globals = Globals
   , _currentRoomId :: !Rooms
   , _timers        :: !(Map TimerType Timer)
   , _gInputDFA     :: !InputDFA
+  , _gLuaState     :: !LuaState
   }
 
 instance Show Globals where

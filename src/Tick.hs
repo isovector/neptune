@@ -10,6 +10,7 @@ import Data.Ecstasy hiding (runSystem)
 import Types
 import Linear.Metric
 import Timers
+import Scripting
 
 
 ------------------------------------------------------------------------------
@@ -17,6 +18,7 @@ import Timers
 tick :: Float -> GameState -> IO GameState
 tick dt ms@(s, _) = execGame ms $ do
   updateTimers dt
+  updateLua
 
   let room = view currentRoom s
   emap $ do
