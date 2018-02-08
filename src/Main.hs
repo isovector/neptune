@@ -6,72 +6,87 @@ module Main where
 
 import           Data.Ecstasy hiding (System)
 import qualified Data.Map as M
-import           Graphics.Gloss
-import           Graphics.Gloss.Interface.IO.Game (playIO)
+import           Data.Time.Clock.POSIX (getPOSIXTime)
+import           Game.Sequoia (startup, render, EngineConfig (..))
 import           LoadImage
 import           Rooms
+import qualified SDL.Raw as SDL
+import           Scripting
 import           System
 import           System.FilePath.Posix
 import           Tick
 import           Types
 import           Viewport
-import Scripting
 
 
-screen :: Display
-screen = InWindow "Neptune" (640, 480) (0, 0)
+getNow :: MonadIO m => m Double
+getNow = liftIO $ realToFrac <$> getPOSIXTime
 
 
 defGlobals :: IO Globals
 defGlobals = do
   l <- initLua
   pure $ Globals
-    { _rooms = [ (Study,       studyRoom)
-              , (City,        cityRoom)
-              , (CostumeShop, costumeRoom)
+    { _rooms = [ (City,        cityRoom)
+              ,  (CostumeShop, costumeRoom)
               ]
     , _currentRoomId = CostumeShop
-    , _mousePos      = zero
-    , _mouseState    = Up
     , _viewport      = viewPortInit
     , _timers        = M.empty
     , _gInputDFA     = IStart
     , _gLuaState     = l
+    , _gController   = Controller $ const False
     }
 
 
 main :: IO ()
 main = do
+  engine <- startup config
   g <- defGlobals
-  s' <- execGame (g, (0, defWorld)) $ do
-          void $ newEntity $ defEntity
-            { pos = Just $ V2 135 176
-            , gfx = Just
-                  . translate 0 15
-                  . color (makeColor 0 0 1 1)
-                  $ circleSolid 15
-            , speed = Just 50
-            , hasFocus = Just ()
-            , isAvatar = Just ()
-            }
+  start  <- realToFrac <$> getPOSIXTime
 
-  playIO screen
-         black
-         60
-         s'
-         drawGame
-         update
-         tick
+  evalGame (g, (0, defWorld)) $ do
+    initialize
+    flip fix start $ \loop last -> do
+      now <- getNow
+      update
+      tick $ now - last
 
-coinPic :: Picture
-coinPic = unsafeLoadPng $ "assets" </> "actionbar"
+      let elapsed = now - start
+      scene <- draw
+      liftIO $ render engine scene (640, 480)
 
-drawGame :: GameState -> IO Picture
-drawGame ms = evalGame ms $ do
+      shouldQuit <- liftIO $ SDL.quitRequested
+      unless shouldQuit $ loop now
+
+  where
+    config = EngineConfig
+               (640, 480)
+               "Neptune"
+               $ rgb 0 0 0
+
+
+initialize :: Game ()
+initialize = do
+  void $ newEntity $ defEntity
+    { pos = Just $ V2 135 176
+    , gfx = Just
+          . filled (rgb 0 0 1)
+          $ circle 15
+    , speed = Just 50
+    , hasFocus = Just ()
+    , isAvatar = Just ()
+    }
+
+coinPic :: Form
+coinPic = move (V2 (-72) (-28)) $ unsafeLoadPng $ "assets" </> "actionbar"
+
+draw :: Game Element
+draw = do
   room <- getGlobals $ view currentRoom
   coin <- getGlobals $ view gInputDFA
 
-  vp   <- getViewport
+  -- vp   <- getViewport
   gfxs <- efor . const $
     (,) <$> get pos
         <*> get gfx
@@ -79,20 +94,20 @@ drawGame ms = evalGame ms $ do
   let pic  = getRoomPicture room
       size = room ^. roomScale
 
-  pure . applyViewPortToPicture vp
-       . pictures
-       $ [pic]
+  pure . collage 640 480
+       . pure
+       -- . applyViewPortToPicture vp
+       . group
+       $ [ pic ]
       ++ fmap (uncurry $ drawGfx size) gfxs
       ++ case coin of
            ICoinOpen p _ -> [translate' p coinPic]
            _ -> []
 
-translate' :: Pos -> Picture -> Picture
-translate' = uncurry translate
-           . view (from v2tuple)
-           . toDrawCoord
+translate' :: Pos -> Form -> Form
+translate' = move
 
-drawGfx :: Float -> Pos -> Picture -> Picture
+drawGfx :: Double -> Pos -> Form -> Form
 drawGfx size worldPos =
-  translate' worldPos . scale size size
+  translate' worldPos . scale size
 

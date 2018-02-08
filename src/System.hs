@@ -6,49 +6,49 @@ module System
   ( update
   ) where
 
-import           Graphics.Gloss.Game        (KeyState)
-import qualified Graphics.Gloss.Game        as G
-import           Timers
-import           Types
-import           Viewport
+import Controller
+import Timers
+import Types
+import Viewport
 
 
 data SystemEvent
-  = Resize      !(V2 Int)
-  | MouseMove   !Pos
-  | MouseButton !KeyState
+  = Resize    !(V2 Int)
+  | MouseEdge !Bool
   | Exit
+  deriving (Show)
 
-------------------------------------------------------------------------------
--- | Turn an underlying Gloss event into a system event.
-asSystem :: G.Event -> Maybe SystemEvent
-asSystem = \case
-    G.EventResize v -> Just . Resize    $ v ^. v2tuple
-    G.EventMotion v -> Just . MouseMove $ v ^. v2tuple
-    G.EventKey (G.MouseButton G.LeftButton) x _ _ -> Just $ MouseButton x
-    G.EventKey (G.Char 'q') _ _ _ -> Just Exit
-    _ -> Nothing
+
+getSystemEvent :: Game (Maybe SystemEvent)
+getSystemEvent = do
+  ctrl  <- getGlobals $ view gController
+  ctrl' <- getController
+  setGlobals $ gController .~ ctrl'
+
+  pure $
+    case (risingEdge ctrl ctrl', fallingEdge ctrl ctrl') of
+      (True, False) -> Just $ MouseEdge True
+      (False, True) -> Just $ MouseEdge False
+      _ -> Nothing
 
 
 ------------------------------------------------------------------------------
 -- | Top-level update.
-update :: G.Event -> GameState -> IO GameState
-update ge = flip execGame $ do
+update :: Game ()
+update = do
+  se <- getSystemEvent
   is <- getGlobals $ view gInputDFA
 
-  for_ ((is,) <$> asSystem ge) $ \case
-    (_, MouseMove v2) -> do
-      wp <- screenToWorld v2
-      setGlobals $ mousePos .~ wp
-
+  for_ (fmap (is,) se) $ \case
     (_, Resize v2) -> do
-      setGlobals $ \gs ->
-        gs & viewport %~ \vp ->
-          vp { viewPortScale = viewportScalingFactor v2
-             }
+      pure ()
+      -- setGlobals $ \gs ->
+      --   gs & viewport %~ \vp ->
+      --     vp { viewPortScale = viewportScalingFactor v2
+      --        }
 
-    (IStart, MouseButton Down) -> do
-      mouse <- getGlobals $ view mousePos
+    (IStart, MouseEdge True) -> do
+      mouse <- getMousePos
       getInteractionTarget mouse >>= \case
         Just it -> do
           startTimer TimerCoin 0.5 $ do
@@ -67,12 +67,12 @@ update ge = flip execGame $ do
                   }
             False -> pure ()
 
-    (IBeforeCoin, MouseButton Up) -> do
+    (IBeforeCoin, MouseEdge False) -> do
       cancelTimer TimerCoin
       setGlobals $ gInputDFA .~ IStart
 
-    (ICoinOpen p it, MouseButton Up) -> do
-      mouse <- getGlobals $ view mousePos
+    (ICoinOpen p it, MouseEdge False) -> do
+      mouse <- getMousePos
       let verb = getBBSurface (coinSurface p) mouse
       for_ verb $ doInteraction it
       setGlobals $ gInputDFA .~ IStart

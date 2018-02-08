@@ -16,7 +16,7 @@ import Types
 base :: FilePath
 base = "assets" </> "costume"
 
-background :: Picture
+background :: Form
 background = unsafeLoadPng $ base </> "background"
 {-# NOINLINE background #-}
 

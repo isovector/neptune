@@ -15,8 +15,10 @@ import Scripting
 
 ------------------------------------------------------------------------------
 -- | Update the 'System' with some delta 'Time'.
-tick :: Float -> GameState -> IO GameState
-tick dt ms@(s, _) = execGame ms $ do
+tick :: Time -> Game ()
+tick dt = do
+  s <- getGlobals id
+
   updateTimers dt
   updateLua
 

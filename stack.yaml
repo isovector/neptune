@@ -3,11 +3,12 @@ resolver: lts-10.4
 packages:
 - '.'
 - '../ecstasy'
+- '../sequoia'
 
 extra-deps:
-  - gloss-game-0.3.3.0
-  - gloss-juicy-0.2.2
   - astar-0.3.0.0
+  - sdl2-2.3.0
+  - frpnow-0.18
 
 flags: {}
 

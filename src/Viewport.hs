@@ -6,8 +6,8 @@ module Viewport
   , viewportScalingFactor
   , getViewport
   , getRoomPicture
-  , screenToWorld
-  , toDrawCoord
+  , applyViewPortToPicture
+  -- , screenToWorld
   ) where
 
 import Types
@@ -28,6 +28,14 @@ viewportScalingFactor = scaleWithin virtualView
                               x0
                               x
 
+applyViewPortToPicture :: ViewPort -> Form -> Form
+applyViewPortToPicture
+  ViewPort  { viewPortScale     = size
+            , viewPortTranslate = v2
+            , viewPortRotate    = rot
+            }
+  = scale size . rotate rot . move (negate v2)
+
 focusCamera :: V2 Int  -- ^ Room size.
             -> V2 Int  -- ^ View size.
             -> Pos     -- ^ Focal point.
@@ -41,18 +49,14 @@ focusCamera (fmap fromIntegral -> V2 rx ry)
     result = V2 (clamp' w (rx - w) x) (clamp' h (ry - h) y)
 
 
-getRoomPicture :: Room -> Picture
-getRoomPicture room =
-  let size      = view roomSize room
-      centerOff = fmap ((/2) . fromIntegral) size
-   in uncurry translate ((centerOff & _y *~ -1) ^. from v2tuple)
-      $ view layers room
+getRoomPicture :: Room -> Form
+getRoomPicture = view layers
 
-screenToWorld :: Pos -> Game Pos
-screenToWorld v2 = do
-    vp <- getViewport
-    pure $ _y *~ -1
-         $ invertViewPort vp (v2 ^. from v2tuple) ^. v2tuple
+-- screenToWorld :: Pos -> Game Pos
+-- screenToWorld v2 = do
+--     vp <- getViewport
+--     pure $ _y *~ -1
+--          $ invertViewPort vp (v2 ^. from v2tuple) ^. v2tuple
 
 getViewport :: Game ViewPort
 getViewport = do
@@ -68,9 +72,7 @@ getViewport = do
 
   pure $ vp
        { viewPortTranslate =
-           negate $ (camera & _y *~ -1) ^. from v2tuple
+           negate $ (camera & _y *~ -1)
        }
 
-toDrawCoord :: Pos -> Pos
-toDrawCoord = _y *~ -1
 

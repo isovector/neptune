@@ -12,50 +12,49 @@ module Types
   , module Control.Lens
   , module Linear.V2
   , module Linear.Vector
-  , module Graphics.Gloss
   , module Data.Ecstasy
-  , KeyState (..)
   , Image
   , PixelRGBA8
   , ask
   , asks
   , lift
-  , liftIO
+  , MonadIO (..)
   , module Data.Function.Pointless
-  , module Graphics.Gloss.Data.ViewPort
+  , module Game.Sequoia
+  , showTrace
+  , MouseButton (..)
   ) where
 
-import           BasePrelude hiding ((&), trace, rotate, resolution, Down, loop)
+-- import           Game.Sequoia.Keyboard (Key (..))
+import           BasePrelude hiding ((&), trace, rotate, resolution, Down, loop, group)
 import           Codec.Picture
 import           Control.Lens hiding (index, lazy, uncons, without)
-import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Monad.State (StateT (..), gets, modify)
 import           Control.Monad.Trans (lift)
 import           Control.Monad.Trans.Reader
 import           Data.Ecstasy
 import           Data.Function.Pointless
 import           Data.Map.Strict (Map)
-import qualified Debug.Trace as DT
 import           Foreign.Lua (LuaState)
-import           Graphics.Gloss hiding (line)
-import           Graphics.Gloss.Data.ViewPort
-import           Graphics.Gloss.Game (KeyState (..))
+import           Foreign.Marshal.Alloc (alloca)
+import           Game.Sequoia hiding (render, step, V2, E)
+import           Game.Sequoia.Utils (showTrace)
 import           Linear.V2
 import           Linear.Vector
+import           SDL.Input.Mouse (MouseButton (..), getMouseButtons)
+import qualified SDL.Raw as SDL
 
-
-showTrace :: Show a => a -> a
-showTrace = DT.trace =<< show
 
 data BB = BB
-  { leftX   :: Float
-  , rightX  :: Float
-  , topY    :: Float
-  , bottomY :: Float
+  { leftX   :: Double
+  , rightX  :: Double
+  , topY    :: Double
+  , bottomY :: Double
   } deriving (Eq, Ord, Show)
 
 
-rectBB :: Float -> Float -> BB
+rectBB :: Double -> Double -> BB
 rectBB ((/2) -> x) ((/2) -> y) =
   BB (-x) x (-y) y
 
@@ -97,8 +96,8 @@ data NavTarget
 data EntWorld f = Entity
   { pos      :: Component f 'Field Pos
   , pathing  :: Component f 'Field NavTarget
-  , speed    :: Component f 'Field Float
-  , gfx      :: Component f 'Field Picture
+  , speed    :: Component f 'Field Double
+  , gfx      :: Component f 'Field Form
   , isAvatar :: Component f 'Unique ()
   , hasFocus :: Component f 'Unique ()
   } deriving (Generic)
@@ -132,8 +131,7 @@ evalGame = (fmap snd .) . runGame
 
 
 ------------------------------------------------------------------------------
-type Time = Float
-type Pos = V2 Float
+type Pos = V2 Double
 
 
 ------------------------------------------------------------------------------
@@ -145,18 +143,40 @@ v2tuple = iso (uncurry V2) $ \(V2 x y) -> (x, y)
 ------------------------------------------------------------------------------
 -- | Core engine state.
 data Globals = Globals
-  { _mousePos      :: !Pos
-  , _mouseState    :: !KeyState
-  , _viewport      :: !ViewPort
+  { _viewport      :: !ViewPort
   , _rooms         :: !(Map Rooms Room)
   , _currentRoomId :: !Rooms
   , _timers        :: !(Map TimerType Timer)
   , _gInputDFA     :: !InputDFA
   , _gLuaState     :: !LuaState
+  , _gController   :: !Controller
   }
 
 instance Show Globals where
   show _ = "Globals"
+
+
+data Controller = Controller
+  { _ctrlMouse :: MouseButton -> Bool
+  }
+
+instance Show Controller where
+  show _ = "Controller"
+
+getController :: Game Controller
+getController =
+  Controller <$> liftIO getMouseButtons
+
+
+getMousePos :: Game Pos
+getMousePos = do
+  liftIO $
+    alloca $ \xptr ->
+    alloca $ \yptr -> do
+      _ <- SDL.getMouseState xptr yptr
+      x <- peek xptr
+      y <- peek yptr
+      pure $ V2 (fromIntegral x) (fromIntegral y)
 
 
 getGlobals :: (Globals -> a) -> Game a
@@ -216,8 +236,7 @@ data InteractionTarget
 ------------------------------------------------------------------------------
 -- | Datakind describing which rooms we can visit.
 data Rooms
-  = Study
-  | City
+  = City
   | CostumeShop
   deriving (Eq, Ord)
 
@@ -233,10 +252,10 @@ data Hotspot = Hotspot
 ------------------------------------------------------------------------------
 -- | State of a room.
 data Room = Room
-  { _layers    :: !Picture
+  { _layers    :: !Form
   , _size'     :: !(V2 Int)
   , _navmesh   :: !NavMesh
-  , _roomScale :: !Float
+  , _roomScale :: !Double
   , _hotspots  :: Pos -> Maybe Hotspot
   }
 
@@ -244,6 +263,23 @@ data InputDFA
   = IStart
   | IBeforeCoin
   | ICoinOpen Pos InteractionTarget
+
+
+data ViewPort = ViewPort
+  { viewPortTranslate :: !(V2 Double)
+  , viewPortRotate  :: !Double
+  , viewPortScale   :: !Double
+  }
+
+viewPortInit :: ViewPort
+viewPortInit = ViewPort
+  { viewPortTranslate = zero
+  , viewPortRotate  = 0
+  , viewPortScale   = 1
+  }
+
+
+
 
 ------------------------------------------------------------------------------
 
