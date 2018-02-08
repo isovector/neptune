@@ -4,7 +4,6 @@ module Viewport
   ( virtualView
   , focusCamera
   , viewportScalingFactor
-  , getViewport
   , getRoomPicture
   , screenToWorld
   , toDrawCoord
@@ -41,35 +40,15 @@ focusCamera (fmap fromIntegral -> V2 rx ry)
     result = V2 (clamp' w (rx - w) x) (clamp' h (ry - h) y)
 
 
-getRoomPicture :: Room -> Picture
+getRoomPicture :: Room -> Form
 getRoomPicture room =
   let size      = view roomSize room
       centerOff = fmap ((/2) . fromIntegral) size
-   in uncurry translate ((centerOff & _y *~ -1) ^. from v2tuple)
+   in move (centerOff & _y *~ -1)
       $ view layers room
 
 screenToWorld :: Pos -> Game Pos
-screenToWorld v2 = do
-    vp <- getViewport
-    pure $ _y *~ -1
-         $ invertViewPort vp (v2 ^. from v2tuple) ^. v2tuple
-
-getViewport :: Game ViewPort
-getViewport = do
-  room <- getGlobals $ view currentRoom
-  vp   <- getGlobals _viewport
-
-  focus <- fmap (fromMaybe zero . listToMaybe) . efor . const $ do
-    with hasFocus
-    get pos
-
-  let size = room ^. roomSize
-      camera = focusCamera size virtualView focus
-
-  pure $ vp
-       { viewPortTranslate =
-           negate $ (camera & _y *~ -1) ^. from v2tuple
-       }
+screenToWorld = pure
 
 toDrawCoord :: Pos -> Pos
 toDrawCoord = _y *~ -1

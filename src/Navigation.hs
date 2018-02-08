@@ -78,7 +78,7 @@ buildNavMesh img = NavMesh {..}
       guard . canWalkOn img $ V2 x y
       return $ V2 x y
 
-smoothPath :: Image PixelRGBA8 -> V2 Float -> V2 Float -> [V2 Float] -> [Pos]
+smoothPath :: Image PixelRGBA8 -> Pos -> Pos -> [Pos] -> [Pos]
 smoothPath img src dst path =
     let v = V.fromList $ (src : path) ++ [dst]
      in go 0 (V.length v - 1) v
@@ -100,7 +100,7 @@ navBounds = subtract 1
 ------------------------------------------------------------------------------
 -- | Compute a walkability sweep by quantizing points on the sweep line to the
 -- nearest nav nodes. Returns true iff all nodes near the path are walkable.
-sweepWalkable :: Image PixelRGBA8 -> V2 Float -> V2 Float -> Bool
+sweepWalkable :: Image PixelRGBA8 -> Pos -> Pos -> Bool
 sweepWalkable img src dst =
   let dir   = normalize $ dst - src
       distInNodeUnits = round $ distance src dst
@@ -128,13 +128,13 @@ canWalkOn img (V2 x y) = flip testBit walkableBit
 
 ------------------------------------------------------------------------------
 -- | Scale a nav point up to world space.
-worldSpace :: Node -> V2 Node -> V2 Float
+worldSpace :: Node -> V2 Node -> Pos
 worldSpace y = (^* resolution) . fmap fromIntegral
 
 
 ------------------------------------------------------------------------------
 -- | Scale a world point down to navigation space.
-navSpace :: Node -> V2 Float -> V2 Node
+navSpace :: Node -> Pos -> V2 Node
 navSpace y = fmap (Node . floor) . (^/ resolution)
 
 
@@ -146,6 +146,6 @@ imgSpace = round . (* resolution) . fromIntegral . unNode
 
 ------------------------------------------------------------------------------
 -- | The resolution at which we sample an image for navigation points.
-resolution :: Float
+resolution :: Double
 resolution = 3.2
 

@@ -15,7 +15,7 @@ import Types
 base :: FilePath
 base = "assets" </> "city"
 
-background :: Picture
+background :: Form
 background = unsafeLoadPng $ base </> "background"
 
 regions :: Image PixelRGBA8

@@ -38,9 +38,6 @@ executable neptune
     , astar
     , containers
     , filepath
-    , gloss
-    , gloss-game
-    , gloss-juicy
     , hspec
     , lens
     , linear
@@ -54,5 +51,8 @@ executable neptune
     , pointless-fun
     , ecstasy
     , hslua
+    , sequoia
+    , sdl2
+    , time
   hs-source-dirs:      src
   default-language:    Haskell2010

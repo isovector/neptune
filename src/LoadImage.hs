@@ -1,22 +1,19 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
 module LoadImage where
 
+import Types
 import Codec.Picture
-import Graphics.Gloss
-import Graphics.Gloss.Game(jpg, png)
 import System.FilePath.Posix
 import System.IO.Unsafe (unsafePerformIO)
 
 
-{-# NOINLINE unsafeLoadJpg #-}
-unsafeLoadJpg :: FilePath -> Picture
-unsafeLoadJpg = jpg . (-<.> "jpg")
+unsafeLoadPng :: FilePath -> Form
+unsafeLoadPng = sprite . (-<.> "png")
 
-
-{-# NOINLINE unsafeLoadPng #-}
-unsafeLoadPng :: FilePath -> Picture
-unsafeLoadPng = png . (-<.> "png")
+loadPng :: FilePath -> Form
+loadPng = sprite . (-<.> "png")
 
 
 {-# NOINLINE unsafeLoadDataPng #-}
