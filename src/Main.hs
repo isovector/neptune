@@ -33,7 +33,7 @@ defGlobals = do
     , _currentRoomId = CostumeShop
     , _mousePos      = zero
     , _mouseState    = False
-    -- , _viewport      = viewPortInit
+    , _viewport      = viewPortInit
     , _timers        = M.empty
     , _gInputDFA     = IStart
     , _gLuaState     = l
@@ -71,7 +71,6 @@ initialize = do
   void $ newEntity $ defEntity
     { pos = Just $ V2 135 176
     , gfx = Just
-          . move (V2 0 15)
           . filled (rgb 0 0 1)
           $ circle 15
     , speed = Just 50
@@ -95,9 +94,11 @@ draw = do
   let pic  = getRoomPicture room
       size = room ^. roomScale
 
-  pure -- . applyViewPortToPicture vp
-       . collage 640 480
-       $ [pic]
+  pure . collage 640 480
+       . pure
+       -- . applyViewPortToPicture vp
+       . group
+       $ [ pic ]
       ++ fmap (uncurry $ drawGfx size) gfxs
       ++ case coin of
            ICoinOpen p _ -> [translate' p coinPic]
@@ -105,7 +106,6 @@ draw = do
 
 translate' :: Pos -> Form -> Form
 translate' = move
-           . toDrawCoord
 
 drawGfx :: Double -> Pos -> Form -> Form
 drawGfx size worldPos =

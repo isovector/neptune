@@ -141,7 +141,7 @@ v2tuple = iso (uncurry V2) $ \(V2 x y) -> (x, y)
 data Globals = Globals
   { _mousePos      :: !Pos
   , _mouseState    :: !Bool
-  -- , _viewport      :: !ViewPort
+  , _viewport      :: !ViewPort
   , _rooms         :: !(Map Rooms Room)
   , _currentRoomId :: !Rooms
   , _timers        :: !(Map TimerType Timer)
@@ -237,6 +237,23 @@ data InputDFA
   = IStart
   | IBeforeCoin
   | ICoinOpen Pos InteractionTarget
+
+
+data ViewPort = ViewPort
+  { viewPortTranslate :: !(V2 Double)
+  , viewPortRotate  :: !Double
+  , viewPortScale   :: !Double
+  }
+
+viewPortInit :: ViewPort
+viewPortInit = ViewPort
+  { viewPortTranslate = zero
+  , viewPortRotate  = 0
+  , viewPortScale   = 1
+  }
+
+
+
 
 ------------------------------------------------------------------------------
 
