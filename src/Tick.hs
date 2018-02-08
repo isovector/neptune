@@ -18,6 +18,7 @@ import Scripting
 tick :: Time -> Game ()
 tick dt = do
   s <- getGlobals id
+
   updateTimers dt
   updateLua
 

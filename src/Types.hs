@@ -22,8 +22,10 @@ module Types
   , module Data.Function.Pointless
   , module Game.Sequoia
   , showTrace
+  , MouseButton (..)
   ) where
 
+-- import           Game.Sequoia.Keyboard (Key (..))
 import           BasePrelude hiding ((&), trace, rotate, resolution, Down, loop, group)
 import           Codec.Picture
 import           Control.Lens hiding (index, lazy, uncons, without)
@@ -35,11 +37,13 @@ import           Data.Ecstasy
 import           Data.Function.Pointless
 import           Data.Map.Strict (Map)
 import           Foreign.Lua (LuaState)
+import           Foreign.Marshal.Alloc (alloca)
 import           Game.Sequoia hiding (render, step, V2, E)
--- import           Game.Sequoia.Keyboard (Key (..))
 import           Game.Sequoia.Utils (showTrace)
 import           Linear.V2
 import           Linear.Vector
+import           SDL.Input.Mouse (MouseButton (..), getMouseButtons)
+import qualified SDL.Raw as SDL
 
 
 data BB = BB
@@ -139,18 +143,40 @@ v2tuple = iso (uncurry V2) $ \(V2 x y) -> (x, y)
 ------------------------------------------------------------------------------
 -- | Core engine state.
 data Globals = Globals
-  { _mousePos      :: !Pos
-  , _mouseState    :: !Bool
-  , _viewport      :: !ViewPort
+  { _viewport      :: !ViewPort
   , _rooms         :: !(Map Rooms Room)
   , _currentRoomId :: !Rooms
   , _timers        :: !(Map TimerType Timer)
   , _gInputDFA     :: !InputDFA
   , _gLuaState     :: !LuaState
+  , _gController   :: !Controller
   }
 
 instance Show Globals where
   show _ = "Globals"
+
+
+data Controller = Controller
+  { _ctrlMouse :: MouseButton -> Bool
+  }
+
+instance Show Controller where
+  show _ = "Controller"
+
+getController :: Game Controller
+getController =
+  Controller <$> liftIO getMouseButtons
+
+
+getMousePos :: Game Pos
+getMousePos = do
+  liftIO $
+    alloca $ \xptr ->
+    alloca $ \yptr -> do
+      _ <- SDL.getMouseState xptr yptr
+      x <- peek xptr
+      y <- peek yptr
+      pure $ V2 (fromIntegral x) (fromIntegral y)
 
 
 getGlobals :: (Globals -> a) -> Game a

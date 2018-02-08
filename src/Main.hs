@@ -31,12 +31,11 @@ defGlobals = do
               ,  (CostumeShop, costumeRoom)
               ]
     , _currentRoomId = CostumeShop
-    , _mousePos      = zero
-    , _mouseState    = False
     , _viewport      = viewPortInit
     , _timers        = M.empty
     , _gInputDFA     = IStart
     , _gLuaState     = l
+    , _gController   = Controller $ const False
     }
 
 
@@ -50,6 +49,7 @@ main = do
     initialize
     flip fix start $ \loop last -> do
       now <- getNow
+      update
       tick $ now - last
 
       let elapsed = now - start
@@ -79,7 +79,7 @@ initialize = do
     }
 
 coinPic :: Form
-coinPic = unsafeLoadPng $ "assets" </> "actionbar"
+coinPic = move (V2 (-72) (-28)) $ unsafeLoadPng $ "assets" </> "actionbar"
 
 draw :: Game Element
 draw = do

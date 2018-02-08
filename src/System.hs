@@ -6,107 +6,106 @@ module System
   ( update
   ) where
 
-import           Timers
-import           Types
-import           Viewport
+import Controller
+import Timers
+import Types
+import Viewport
 
 
 data SystemEvent
-  = Resize      !(V2 Int)
-  | MouseMove   !Pos
-  | MouseButton !Bool
+  = Resize    !(V2 Int)
+  | MouseEdge !Bool
   | Exit
-
-update :: Monad m => a -> m a
-update = pure
-
---------------------------------------------------------------------------------
----- | Turn an underlying Gloss event into a system event.
---asSystem :: G.Event -> Maybe SystemEvent
---asSystem = \case
---    G.EventResize v -> Just . Resize    $ v ^. v2tuple
---    G.EventMotion v -> Just . MouseMove $ v ^. v2tuple
---    G.EventKey (G.MouseButton G.LeftButton) x _ _ -> Just $ MouseButton x
---    G.EventKey (G.Char 'q') _ _ _ -> Just Exit
---    _ -> Nothing
+  deriving (Show)
 
 
---------------------------------------------------------------------------------
----- | Top-level update.
---update :: G.Event -> GameState -> IO GameState
---update ge = flip execGame $ do
---  is <- getGlobals $ view gInputDFA
+getSystemEvent :: Game (Maybe SystemEvent)
+getSystemEvent = do
+  ctrl  <- getGlobals $ view gController
+  ctrl' <- getController
+  setGlobals $ gController .~ ctrl'
 
---  for_ ((is,) <$> asSystem ge) $ \case
---    (_, MouseMove v2) -> do
---      wp <- screenToWorld v2
---      setGlobals $ mousePos .~ wp
-
---    (_, Resize v2) -> do
---      setGlobals $ \gs ->
---        gs & viewport %~ \vp ->
---          vp { viewPortScale = viewportScalingFactor v2
---             }
-
---    (IStart, MouseButton Down) -> do
---      mouse <- getGlobals $ view mousePos
---      getInteractionTarget mouse >>= \case
---        Just it -> do
---          startTimer TimerCoin 0.5 $ do
---            setGlobals $ gInputDFA .~ ICoinOpen mouse it
---          setGlobals $ gInputDFA .~ IBeforeCoin
-
---        Nothing -> do
---          room <- getGlobals $ view currentRoom
---          let nav = _navmesh room
---          case isWalkable nav mouse of
---            True ->
---              emap $ do
---                with isAvatar
---                pure defEntity'
---                  { pathing = Set $ NavTo mouse
---                  }
---            False -> pure ()
-
---    (IBeforeCoin, MouseButton Up) -> do
---      cancelTimer TimerCoin
---      setGlobals $ gInputDFA .~ IStart
-
---    (ICoinOpen p it, MouseButton Up) -> do
---      mouse <- getGlobals $ view mousePos
---      let verb = getBBSurface (coinSurface p) mouse
---      for_ verb $ doInteraction it
---      setGlobals $ gInputDFA .~ IStart
+  pure $
+    case (risingEdge ctrl ctrl', fallingEdge ctrl ctrl') of
+      (True, False) -> Just $ MouseEdge True
+      (False, True) -> Just $ MouseEdge False
+      _ -> Nothing
 
 
---    (_, Exit) -> error "bye felicia"
+------------------------------------------------------------------------------
+-- | Top-level update.
+update :: Game ()
+update = do
+  se <- getSystemEvent
+  is <- getGlobals $ view gInputDFA
 
---    _ -> pure ()
+  for_ (fmap (is,) se) $ \case
+    (_, Resize v2) -> do
+      pure ()
+      -- setGlobals $ \gs ->
+      --   gs & viewport %~ \vp ->
+      --     vp { viewPortScale = viewportScalingFactor v2
+      --        }
+
+    (IStart, MouseEdge True) -> do
+      mouse <- getMousePos
+      getInteractionTarget mouse >>= \case
+        Just it -> do
+          startTimer TimerCoin 0.5 $ do
+            setGlobals $ gInputDFA .~ ICoinOpen mouse it
+          setGlobals $ gInputDFA .~ IBeforeCoin
+
+        Nothing -> do
+          room <- getGlobals $ view currentRoom
+          let nav = _navmesh room
+          case isWalkable nav mouse of
+            True ->
+              emap $ do
+                with isAvatar
+                pure defEntity'
+                  { pathing = Set $ NavTo mouse
+                  }
+            False -> pure ()
+
+    (IBeforeCoin, MouseEdge False) -> do
+      cancelTimer TimerCoin
+      setGlobals $ gInputDFA .~ IStart
+
+    (ICoinOpen p it, MouseEdge False) -> do
+      mouse <- getMousePos
+      let verb = getBBSurface (coinSurface p) mouse
+      for_ verb $ doInteraction it
+      setGlobals $ gInputDFA .~ IStart
 
 
---doInteraction :: InteractionTarget -> Verb -> Game ()
---doInteraction _ = liftIO . print
+    (_, Exit) -> error "bye felicia"
+
+    _ -> pure ()
 
 
---coinSurface :: Pos -> BBSurface Verb
---coinSurface p = BBSurface
---  [ ( moveBB (V2 (-width) 0 + p) rect
---    , TalkTo
---    )
---  , ( moveBB p rect
---    , Examine
---    )
---  , ( moveBB (V2 width 0 + p) rect
---    , Touch
---    )
---  ]
---  where
---    width = 48
---    rect = rectBB width width
+doInteraction :: InteractionTarget -> Verb -> Game ()
+doInteraction _ = liftIO . print
 
 
---getInteractionTarget :: Pos -> Game (Maybe InteractionTarget)
---getInteractionTarget p = do
---  room <- getGlobals $ view currentRoom
---  pure $ InteractionHotspot <$> _hotspots room p
+coinSurface :: Pos -> BBSurface Verb
+coinSurface p = BBSurface
+  [ ( moveBB (V2 (-width) 0 + p) rect
+    , TalkTo
+    )
+  , ( moveBB p rect
+    , Examine
+    )
+  , ( moveBB (V2 width 0 + p) rect
+    , Touch
+    )
+  ]
+  where
+    width = 48
+    rect = rectBB width width
+
+
+getInteractionTarget :: Pos -> Game (Maybe InteractionTarget)
+getInteractionTarget p = do
+  room <- getGlobals $ view currentRoom
+  pure $ InteractionHotspot <$> _hotspots room p
 
