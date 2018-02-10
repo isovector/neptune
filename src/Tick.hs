@@ -48,7 +48,6 @@ tick dt = do
         epsilon = 2
         shouldChange = needed < epsilon
 
-
     pure $ defEntity'
       { pos     = Set $ bool pos' g shouldChange
       , pathing =

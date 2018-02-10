@@ -1,10 +1,11 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NoImplicitPrelude          #-}
-{-# LANGUAGE PolyKinds                  #-}
-{-# LANGUAGE RecordWildCards            #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TupleSections              #-}
+{-# LANGUAGE DataKinds                       #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving      #-}
+{-# LANGUAGE NoImplicitPrelude               #-}
+{-# LANGUAGE PolyKinds                       #-}
+{-# LANGUAGE RecordWildCards                 #-}
+{-# LANGUAGE TemplateHaskell                 #-}
+{-# LANGUAGE TupleSections                   #-}
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 module Types
   ( module Types
@@ -28,6 +29,7 @@ module Types
 -- import           Game.Sequoia.Keyboard (Key (..))
 import           BasePrelude hiding ((&), trace, rotate, resolution, Down, loop, group)
 import           Codec.Picture
+import qualified Constants as CD
 import           Control.Lens hiding (index, lazy, uncons, without)
 import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Monad.State (StateT (..), gets, modify)
@@ -45,6 +47,8 @@ import           Linear.Vector
 import           SDL.Input.Mouse (MouseButton (..), getMouseButtons)
 import qualified SDL.Raw as SDL
 
+
+CD.Constants {..} = read $ unsafePerformIO $ readFile "assets/constants"
 
 data BB = BB
   { leftX   :: Double

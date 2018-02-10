@@ -1,0 +1,5 @@
+Constants
+  { mouseLeft  = 0
+  , mouseRight = 2
+  }
+

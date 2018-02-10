@@ -23,6 +23,7 @@ getSystemEvent :: Game (Maybe SystemEvent)
 getSystemEvent = do
   ctrl  <- getGlobals $ view gController
   ctrl' <- getController
+
   setGlobals $ gController .~ ctrl'
 
   pure $

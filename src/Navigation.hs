@@ -83,11 +83,14 @@ smoothPath img src dst path =
     let v = V.fromList $ (src : path) ++ [dst]
      in go 0 (V.length v - 1) v
   where
-    go l u v =
+    go l u v | l == u    = [v V.! l]
+    go l u v | otherwise =
       if sweepWalkable img (v V.! l) (v V.! u)
          then [v V.! u]
          else let mid = ((u - l) `div` 2) + l
-               in go l mid v ++ go mid u v
+               in case (mid == l || mid == u) of
+                    False -> go l mid v ++ go mid u v
+                    True -> fmap (v V.!) [l .. u]
 
 
 navBounds :: Image a -> V2 Node
