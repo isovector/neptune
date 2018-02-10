@@ -6,11 +6,12 @@ module System
   ( update
   ) where
 
-import Utils
 import Controller
+import Game.Sequoia.Keyboard (Key (..))
+import Scripting
 import Timers
 import Types
-import Game.Sequoia.Keyboard (Key (..))
+import Utils
 
 
 data SystemEvent
@@ -88,11 +89,13 @@ update = do
 
 doInteraction :: InteractionTarget -> Verb -> Game ()
 doInteraction _ v = do
-  p <- fmap head . efor . const $ do
-         with isAvatar
-         get pos
+  asyncLua $ "player:interact('" <> show v <> "')"
 
-  timedText (rgb 0 0.3 0) (p - V2 0 30 ) $ show v
+  -- p <- fmap head . efor . const $ do
+  --        with isAvatar
+  --        get pos
+
+  -- timedText (rgb 0 0.3 0) (p - V2 0 30 ) $ show v
 
 
 coinSurface :: Pos -> BBSurface Verb

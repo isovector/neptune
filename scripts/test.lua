@@ -1,3 +1,10 @@
+require('base')
+player = Actor()
+player.interact = function(self, verb)
+  do
+    return hsSay(1, 0, 1, 50, 50, verb)
+  end
+end
 tasks:start(function()
   print("hello")
   coroutine.yield()

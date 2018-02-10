@@ -1,3 +1,9 @@
+export player
+
+player = Actor!
+player.interact = (verb) => do
+  hsSay(1, 0, 1, 50, 50, verb)
+
 tasks\start ->
   print("hello")
   coroutine.yield()
