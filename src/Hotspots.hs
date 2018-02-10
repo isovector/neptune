@@ -32,7 +32,9 @@ mkHotspot img f h = bool Nothing (Just h)
                   . clampToWorld
                   . fmap round
   where
-    clampToWorld = clamp (V2 0 0) $ imageSize img
+    clampToWorld = clamp (V2 0 0)
+                 . fmap fromIntegral
+                 $ imageSize img - 1
 
 
 ------------------------------------------------------------------------------

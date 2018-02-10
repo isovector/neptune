@@ -51,7 +51,9 @@ buildNavMesh img = NavMesh {..}
                         (== navb)
                         nava
 
-    clampToWorld = clamp (V2 0 0) (fmap fromIntegral $ imageSize img - 1)
+    clampToWorld = clamp (V2 0 0)
+                 . fmap fromIntegral
+                 $ imageSize img - 1
     isWalkable = canWalkOn img . navSpace . clampToWorld
 
     -- The (exclusive) max for width and height of a stage.
