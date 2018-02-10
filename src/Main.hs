@@ -17,6 +17,7 @@ import           System.FilePath.Posix
 import           Tick
 import           Types
 import           Viewport
+import Game.Sequoia.Text
 
 
 getNow :: MonadIO m => m Double

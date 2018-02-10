@@ -32,27 +32,28 @@ executable neptune
   -- other-extensions:
   build-depends:
       base >=4.9 && <5
-    , base-prelude
     , JuicyPixels
     , QuickCheck
     , astar
+    , base-prelude
     , containers
+    , data-default
+    , ecstasy
     , filepath
+    , hashable
+    , hslua
     , hspec
     , lens
     , linear
+    , monad-coroutine
     , mtl
+    , pointless-fun
+    , sdl2
+    , sequoia
+    , text
+    , time
     , transformers
     , unordered-containers
     , vector
-    , hashable
-    , monad-coroutine
-    , data-default
-    , pointless-fun
-    , ecstasy
-    , hslua
-    , sequoia
-    , sdl2
-    , time
   hs-source-dirs:      src
   default-language:    Haskell2010

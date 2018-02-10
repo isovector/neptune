@@ -211,6 +211,7 @@ data Timer = Timer
 
 data TimerType
   = TimerCoin
+  | TimerText Ent
   deriving (Eq, Ord)
 
 ------------------------------------------------------------------------------

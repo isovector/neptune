@@ -6,10 +6,10 @@ module System
   ( update
   ) where
 
+import Utils
 import Controller
 import Timers
 import Types
-import Viewport
 
 
 data SystemEvent
@@ -41,8 +41,7 @@ update = do
   is <- getGlobals $ view gInputDFA
 
   for_ (fmap (is,) se) $ \case
-    (_, Resize v2) -> do
-      pure ()
+    -- (_, Resize v2) -> do
       -- setGlobals $ \gs ->
       --   gs & viewport %~ \vp ->
       --     vp { viewPortScale = viewportScalingFactor v2
@@ -85,24 +84,29 @@ update = do
 
 
 doInteraction :: InteractionTarget -> Verb -> Game ()
-doInteraction _ = liftIO . print
+doInteraction _ v = do
+  p <- fmap head . efor . const $ do
+         with isAvatar
+         get pos
+
+  timedText (rgb 0 0.3 0) (p - V2 0 30 ) $ show v
 
 
 coinSurface :: Pos -> BBSurface Verb
 coinSurface p = BBSurface
-  [ ( moveBB (V2 (-width) 0 + p) rect
+  [ ( moveBB (V2 (-width) 0 + p) r
     , TalkTo
     )
-  , ( moveBB p rect
+  , ( moveBB p r
     , Examine
     )
-  , ( moveBB (V2 width 0 + p) rect
+  , ( moveBB (V2 width 0 + p) r
     , Touch
     )
   ]
   where
     width = 48
-    rect = rectBB width width
+    r = rectBB width width
 
 
 getInteractionTarget :: Pos -> Game (Maybe InteractionTarget)
