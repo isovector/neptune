@@ -40,9 +40,9 @@ buildNavMesh img = NavMesh {..}
   where
     navigate (clampToWorld -> a)
              (clampToWorld -> b) = smoothPath img a b
-                                 . fmap (worldSpace h) <$>
-      let nava = navSpace h a
-          navb = navSpace h b
+                                 . fmap worldSpace <$>
+      let nava = navSpace a
+          navb = navSpace b
       in if nava == navb && not (canWalkOn img nava)
             then Nothing
             else aStar neighbors
@@ -52,7 +52,7 @@ buildNavMesh img = NavMesh {..}
                         nava
 
     clampToWorld = clamp (V2 0 0) (fmap fromIntegral $ imageSize img - 1)
-    isWalkable = canWalkOn img . navSpace h . clampToWorld
+    isWalkable = canWalkOn img . navSpace . clampToWorld
 
     -- The (exclusive) max for width and height of a stage.
     w, h :: Node
@@ -79,8 +79,8 @@ buildNavMesh img = NavMesh {..}
       return $ V2 x y
 
 smoothPath :: Image PixelRGBA8 -> Pos -> Pos -> [Pos] -> [Pos]
-smoothPath img src dst path =
-    let v = V.fromList $ (src : path) ++ [dst]
+smoothPath img src dst p =
+    let v = V.fromList $ (src : p) ++ [dst]
      in go 0 (V.length v - 1) v
   where
     go l u v | l == u    = [v V.! l]
@@ -107,10 +107,10 @@ sweepWalkable :: Image PixelRGBA8 -> Pos -> Pos -> Bool
 sweepWalkable img src dst =
   let dir   = normalize $ dst - src
       distInNodeUnits = round $ distance src dst
-      bounds@(V2 _ z) = navBounds img
+      bounds = navBounds img
     in getAll . flip foldMap [0 .. distInNodeUnits] $ \n ->
         let me = src + dir ^* (fromIntegral @Int n)
-          in All . canWalkOn img $ clamp (V2 0 0) bounds $ navSpace z me
+          in All . canWalkOn img $ clamp (V2 0 0) bounds $ navSpace me
 
 
 walkableBit :: Int
@@ -131,14 +131,14 @@ canWalkOn img (V2 x y) = flip testBit walkableBit
 
 ------------------------------------------------------------------------------
 -- | Scale a nav point up to world space.
-worldSpace :: Node -> V2 Node -> Pos
-worldSpace y = (^* resolution) . fmap fromIntegral
+worldSpace :: V2 Node -> Pos
+worldSpace = (^* resolution) . fmap fromIntegral
 
 
 ------------------------------------------------------------------------------
 -- | Scale a world point down to navigation space.
-navSpace :: Node -> Pos -> V2 Node
-navSpace y = fmap (Node . floor) . (^/ resolution)
+navSpace :: Pos -> V2 Node
+navSpace = fmap (Node . floor) . (^/ resolution)
 
 
 ------------------------------------------------------------------------------
