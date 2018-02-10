@@ -36,7 +36,9 @@ defGlobals = do
     , _timers        = M.empty
     , _gInputDFA     = IStart
     , _gLuaState     = l
-    , _gController   = Controller $ const False
+    , _gController   = Controller
+                         (const False)
+                         (const False)
     }
 
 

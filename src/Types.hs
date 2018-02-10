@@ -42,6 +42,7 @@ import           Foreign.Lua (LuaState)
 import           Foreign.Marshal.Alloc (alloca)
 import           Game.Sequoia hiding (render, step, V2, E)
 import           Game.Sequoia.Utils (showTrace)
+import           Game.Sequoia.Keyboard (Key (..), getKeyState)
 import           Linear.V2
 import           Linear.Vector
 import           SDL.Input.Mouse (MouseButton (..), getMouseButtons)
@@ -162,14 +163,20 @@ instance Show Globals where
 
 data Controller = Controller
   { _ctrlMouse :: MouseButton -> Bool
+  , _ctrlKeys  :: Key -> Bool
   }
 
 instance Show Controller where
   show _ = "Controller"
 
 getController :: Game Controller
-getController =
-  Controller <$> liftIO getMouseButtons
+getController = do
+  keys <- liftIO getKeyState
+
+  Controller
+    <$> liftIO getMouseButtons
+    <*> pure (flip elem $ fmap toEnum keys)
+
 
 
 getMousePos :: Game Pos

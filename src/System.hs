@@ -10,6 +10,7 @@ import Utils
 import Controller
 import Timers
 import Types
+import Game.Sequoia.Keyboard (Key (..))
 
 
 data SystemEvent
@@ -23,6 +24,8 @@ getSystemEvent :: Game (Maybe SystemEvent)
 getSystemEvent = do
   ctrl  <- getGlobals $ view gController
   ctrl' <- getController
+
+  when (_ctrlKeys ctrl' QKey) $ error "bye"
 
   setGlobals $ gController .~ ctrl'
 
