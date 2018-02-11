@@ -17,7 +17,6 @@ import           System.FilePath.Posix
 import           Tick
 import           Types
 import           Viewport
-import Game.Sequoia.Text
 
 
 getNow :: MonadIO m => m Double
@@ -36,6 +35,7 @@ defGlobals = do
     , _timers        = M.empty
     , _gInputDFA     = IStart
     , _gLuaState     = l
+    , _gLuaActions   = []
     , _gController   = Controller
                          (const False)
                          (const False)
@@ -45,22 +45,22 @@ defGlobals = do
 main :: IO ()
 main = do
   engine <- startup config
-  g <- defGlobals
+  g      <- defGlobals
   start  <- realToFrac <$> getPOSIXTime
+  s0     <- execGame (g, (0, defWorld)) $ initialize
 
-  evalGame (g, (0, defWorld)) $ do
-    initialize
-    flip fix start $ \loop last -> do
-      now <- getNow
+  flip fix (start, s0) $ \loop (last, s) -> do
+    now <- getNow
+    s' <- execGame s $ do
       update
       tick $ now - last
 
-      let elapsed = now - start
       scene <- draw
       liftIO $ render engine scene (640, 480)
 
-      shouldQuit <- liftIO $ SDL.quitRequested
-      unless shouldQuit $ loop now
+    s'' <- updateLua s'
+    shouldQuit <- SDL.quitRequested
+    unless shouldQuit $ loop (now, s'')
 
   where
     config = EngineConfig

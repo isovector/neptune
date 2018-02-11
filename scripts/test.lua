@@ -1,8 +1,13 @@
-require('base')
 player = Actor()
 player.interact = function(self, verb)
   do
-    return hsSay(1, 0, 1, 50, 50, verb)
+    local pos = hsEntPos(hsGetPlayer())
+    hsSay({
+      1,
+      0,
+      1
+    }, pos, verb)
+    return print("lua yo yo")
   end
 end
 tasks:start(function()

@@ -8,26 +8,26 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 module Types
-  ( module Types
-  , module BasePrelude
-  , module Control.Lens
-  , module Linear.V2
-  , module Linear.Vector
-  , module Data.Ecstasy
-  , Image
+  ( Image
+  , MonadIO (..)
+  , MouseButton (..)
   , PixelRGBA8
   , ask
   , asks
   , lift
-  , MonadIO (..)
-  , module Data.Function.Pointless
+  , module BasePrelude
+  , module Control.Lens
+  , module Data.Composition
+  , module Data.Ecstasy
   , module Game.Sequoia
+  , module Linear.V2
+  , module Linear.Vector
+  , module Types
   , showTrace
-  , MouseButton (..)
   ) where
 
--- import           Game.Sequoia.Keyboard (Key (..))
-import           BasePrelude hiding ((&), trace, rotate, resolution, Down, loop, group)
+import qualified BasePrelude as BP
+import           BasePrelude hiding ((&), trace, rotate, resolution, Down, loop, group, peek)
 import           Codec.Picture
 import qualified Constants as CD
 import           Control.Lens hiding (index, lazy, uncons, without)
@@ -35,14 +35,14 @@ import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Monad.State (StateT (..), gets, modify)
 import           Control.Monad.Trans (lift)
 import           Control.Monad.Trans.Reader
+import           Data.Composition
 import           Data.Ecstasy
-import           Data.Function.Pointless
 import           Data.Map.Strict (Map)
-import           Foreign.Lua (LuaState)
+import           Foreign.Lua (LuaState, Lua)
 import           Foreign.Marshal.Alloc (alloca)
 import           Game.Sequoia hiding (render, step, V2, E)
-import           Game.Sequoia.Utils (showTrace)
 import           Game.Sequoia.Keyboard (Key (..), getKeyState)
+import           Game.Sequoia.Utils (showTrace)
 import           Linear.V2
 import           Linear.Vector
 import           SDL.Input.Mouse (MouseButton (..), getMouseButtons)
@@ -154,6 +154,7 @@ data Globals = Globals
   , _timers        :: !(Map TimerType Timer)
   , _gInputDFA     :: !InputDFA
   , _gLuaState     :: !LuaState
+  , _gLuaActions   :: ![Lua ()]
   , _gController   :: !Controller
   }
 
@@ -185,8 +186,8 @@ getMousePos = do
     alloca $ \xptr ->
     alloca $ \yptr -> do
       _ <- SDL.getMouseState xptr yptr
-      x <- peek xptr
-      y <- peek yptr
+      x <- BP.peek xptr
+      y <- BP.peek yptr
       pure $ V2 (fromIntegral x) (fromIntegral y)
 
 

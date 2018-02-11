@@ -1,6 +1,6 @@
 all:
 	moonc scripts/*.moon &
-	stack build
+	stack build -j 4 --fast
 	stack exec neptune
 
 .PHONY: all

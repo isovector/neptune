@@ -20,7 +20,6 @@ tick dt = do
   s <- getGlobals id
 
   updateTimers dt
-  updateLua
 
   let room = view currentRoom s
   emap $ do
