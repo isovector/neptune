@@ -36,6 +36,7 @@ executable neptune
     , QuickCheck
     , astar
     , base-prelude
+    , bytestring
     , composition
     , containers
     , data-default

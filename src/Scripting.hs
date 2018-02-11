@@ -48,9 +48,10 @@ liftGame g = liftIO $ do
 updateLua :: GameState -> IO GameState
 updateLua s@(g, _) = do
   writeIORef globalGameState s
-  _ <- runLuaWith (_gLuaState g) $ do
+  x <- runLuaWith (_gLuaState g) $ do
          void . sequence $ _gLuaActions g
          dostring "tasks:continue()"
+  when (x /= OK) . liftIO $ print x
 
   s' <- readIORef globalGameState
   execGame s' . setGlobals
