@@ -28,6 +28,7 @@ initLua = do
       player <- efor $ \e -> with isAvatar >> pure e
       pure . Optional $ listToMaybe player
     registerHaskellFunction "hsSay" $ liftGame .:. timedText
+    registerHaskellFunction "rgb" $ \r g b -> pure @Lua $ rgb r g b
 
     _ <- dostring "package.path = package.path .. ';./scripts/?.lua'"
     liftIO . print =<< dostring "require 'init'"
