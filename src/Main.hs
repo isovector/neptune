@@ -19,6 +19,12 @@ import           Types
 import           Viewport
 
 
+gameWidth :: Int
+gameWidth = 640
+
+gameHeight :: Int
+gameHeight = 480
+
 getNow :: MonadIO m => m Double
 getNow = liftIO $ realToFrac <$> getPOSIXTime
 
@@ -83,6 +89,12 @@ initialize = do
     , isAvatar = Just ()
     }
 
+  void $ newEntity $ defEntity
+    { pos         = Just $ V2 (fromIntegral gameWidth / 2) (fromIntegral gameHeight - 40)
+    , gfx         = Nothing
+    , isNarration = Just ()
+    }
+
 coinPic :: Form
 coinPic = move (V2 (-72) (-28)) $ unsafeLoadPng $ "assets" </> "actionbar"
 
@@ -99,7 +111,7 @@ draw = do
   let pic  = getRoomPicture room
       size = room ^. roomScale
 
-  pure . collage 640 480
+  pure . collage gameWidth gameHeight
        . pure
        -- . applyViewPortToPicture vp
        . group

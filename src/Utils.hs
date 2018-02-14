@@ -8,6 +8,15 @@ import Game.Sequoia.Color
 import Data.Text (pack)
 import Timers
 
+renderText :: Color -> String -> Form
+renderText c str = toForm
+                 . text
+                 . height 12
+                 . color white
+                 . stroke (defaultLine { lineColor = c, lineWidth = 4 } )
+                 . toText
+                 $ pack str
+
 timedText :: Color -> Pos -> String -> Game ()
 timedText c p str = do
   let time = (* 0.5)
@@ -27,13 +36,6 @@ textEnt :: Color -> Pos -> String -> Game Ent
 textEnt c p str =
   newEntity defEntity
     { pos = Just p
-    , gfx = Just
-          . toForm
-          . text
-          . height 12
-          . color white
-          . stroke (defaultLine { lineColor = c, lineWidth = 4 } )
-          . toText
-          $ pack str
+    , gfx = Just $ renderText c str
     }
 

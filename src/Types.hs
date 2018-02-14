@@ -99,13 +99,14 @@ data NavTarget
   deriving (Show)
 
 data EntWorld f = Entity
-  { pos       :: Component f 'Field Pos
-  , pathing   :: Component f 'Field NavTarget
-  , speed     :: Component f 'Field Double
-  , gfx       :: Component f 'Field Form
-  , talkColor :: Component f 'Field Color
-  , isAvatar  :: Component f 'Unique ()
-  , hasFocus  :: Component f 'Unique ()
+  { pos         :: Component f 'Field Pos
+  , pathing     :: Component f 'Field NavTarget
+  , speed       :: Component f 'Field Double
+  , gfx         :: Component f 'Field Form
+  , talkColor   :: Component f 'Field Color
+  , isAvatar    :: Component f 'Unique ()
+  , isNarration :: Component f 'Unique ()
+  , hasFocus    :: Component f 'Unique ()
   } deriving (Generic)
 
 deriving instance Show (EntWorld 'WorldOf)

@@ -4,6 +4,7 @@
 
 module System
   ( update
+  , getInteractionTarget
   ) where
 
 import Controller
@@ -11,7 +12,6 @@ import Game.Sequoia.Keyboard (Key (..))
 import Scripting
 import Timers
 import Types
-import Utils
 
 
 data SystemEvent
