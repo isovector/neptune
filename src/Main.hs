@@ -47,7 +47,7 @@ main = do
   engine <- startup config
   g      <- defGlobals
   start  <- realToFrac <$> getPOSIXTime
-  s0     <- execGame (g, (0, defWorld)) $ initialize
+  s0     <- execGame (g, (0, defWorld)) initialize
 
   flip fix (start, s0) $ \loop (last, s) -> do
     now <- getNow
@@ -71,12 +71,14 @@ main = do
 
 initialize :: Game ()
 initialize = do
+  asyncLua "require 'test'"
   void $ newEntity $ defEntity
     { pos = Just $ V2 135 176
     , gfx = Just
           . filled (rgb 0 0 1)
           $ circle 15
     , speed = Just 50
+    , talkColor = Just $ rgb 0 0.7 1
     , hasFocus = Just ()
     , isAvatar = Just ()
     }

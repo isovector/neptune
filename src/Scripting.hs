@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE NoImplicitPrelude    #-}
 {-# LANGUAGE OverloadedStrings    #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -8,12 +9,15 @@ import Foreign.Lua
 import Foreign.Lua.Api (newstate)
 import Types
 import Utils
-import Orphans ()
+import Orphans (unEnt)
 
 
 globalGameState :: IORef GameState
-globalGameState = unsafePerformIO $ newIORef undefined
+globalGameState = unsafePerformIO
+                . newIORef
+                $ error "not initialized yet"
 {-# NOINLINE globalGameState #-}
+
 
 initLua :: IO LuaState
 initLua = do
@@ -21,18 +25,20 @@ initLua = do
   _ <- runLuaWith l $ do
     openlibs
 
-    registerHaskellFunction "hsEntPos" $ \e -> liftGame $ do
-       ent <- getEntity e
-       pure . Optional $ pos ent
+    registerHaskellFunction "hsNewEntity" $ liftGame $
+      unEnt <$> newEntity defEntity
+
+    exposeComponent "hsEntPos" pos
+    exposeComponent "hsEntTalkColor" talkColor
+
     registerHaskellFunction "hsGetPlayer" . liftGame $ do
       player <- efor $ \e -> with isAvatar >> pure e
       pure . Optional $ listToMaybe player
+
     registerHaskellFunction "hsSay" $ liftGame .:. timedText
-    registerHaskellFunction "rgb" $ \r g b -> pure @Lua $ rgb r g b
 
     _ <- dostring "package.path = package.path .. ';./scripts/?.lua'"
     liftIO . print =<< dostring "require 'init'"
-    liftIO . print =<< dostring "require 'test'"
   pure l
 
 
@@ -42,6 +48,13 @@ liftGame g = liftIO $ do
   (s', a) <- runGame s g
   writeIORef globalGameState s'
   pure a
+
+
+exposeComponent :: ToLuaStack a => String -> (EntWorld 'FieldOf -> Maybe a) -> Lua ()
+exposeComponent nm f =
+  registerHaskellFunction nm $ \e -> liftGame $ do
+    ent <- getEntity $ Ent e
+    pure . Optional $ f ent
 
 
 ------------------------------------------------------------------------------

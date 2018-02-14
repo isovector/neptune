@@ -1,9 +1,8 @@
 export player
 
-player = Actor!
+player = hsGetPlayer()
 player.interact = (verb) => do
-  pos = hsEntPos(hsGetPlayer())
-  hsSay(rgb(1, 0, 1), pos - V2(0, 30), verb)
+  hsSay(@talkColor, @pos - V2(0, 30), verb)
 
 tasks\start ->
   print("hello")

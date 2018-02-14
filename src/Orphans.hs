@@ -9,6 +9,17 @@ import Foreign.Lua
 import Types
 import Game.Sequoia.Color (Color (..))
 
+unEnt :: Ent -> Int
+unEnt (Ent e) = e
+
+
+instance FromLuaStack Int where
+  peek si = do
+    LuaInteger d <- peek si
+    pure $ fromIntegral d
+
+instance ToLuaStack Int where
+  push = push . LuaInteger . fromIntegral
 
 instance FromLuaStack Double where
   peek si = do
@@ -19,25 +30,22 @@ instance ToLuaStack Double where
   push = push . LuaNumber
 
 instance FromLuaStack Ent where
-  peek si = do
-    LuaInteger e <- peek si
-    pure . Ent $ fromIntegral e
+  peek si = Ent <$> getField si "ent"
 
 instance ToLuaStack Ent where
-  push (Ent e) =
-    push . LuaInteger $ fromIntegral e
+  push (Ent e) = callAndKeep "Actor" e
+
 
 instance FromLuaStack Color where
-  peek si = do
-    (r, g, b) <- peek si
-    pure $ rgb r g b
+  peek si =
+    rgba <$> getField si "r"
+         <*> getField si "g"
+         <*> getField si "b"
+         <*> getField si "a"
 
 instance ToLuaStack Color where
-  push (Color r g b _) =
-    push ( LuaNumber r
-         , LuaNumber g
-         , LuaNumber b
-         )
+  push (Color r g b a) =
+    callAndKeep "Color" r g b a
 
 
 instance FromLuaStack Pos where
