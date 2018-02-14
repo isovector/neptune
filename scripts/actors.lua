@@ -61,6 +61,12 @@ do
         end
       end
     },
+    say = function(self, what)
+      return hsSay(self.talkColor, self.pos - V2(0, 30), what)
+    end,
+    walkTo = function(self, where)
+      return hsWalkTo(self.ent, where)
+    end,
     interact = function(self, verb) end
   }
   _base_0.__index = _base_0

@@ -2,17 +2,6 @@ export player
 
 player = hsGetPlayer()
 player.interact = (verb) => do
-  hsSay(@talkColor, @pos - V2(0, 30), verb)
-
-tasks\start ->
-  print("hello")
-  coroutine.yield()
-  coroutine.yield()
-  print("goodbye")
-
-tasks\start ->
-  print("hello2")
-  for i=1,10
-    coroutine.yield()
-    print(i)
+  @say(verb)
+  @walkTo(V2(474, 172))
 

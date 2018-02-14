@@ -36,6 +36,10 @@ initLua = do
       pure . Optional $ listToMaybe player
 
     registerHaskellFunction "hsSay" $ liftGame .:. timedText
+    registerHaskellFunction "hsWalkTo" $ \e p -> liftGame $ do
+      setEntity (Ent e) $ defEntity'
+        { pathing = Set $ NavTo p
+        }
 
     _ <- dostring "package.path = package.path .. ';./scripts/?.lua'"
     liftIO . print =<< dostring "require 'init'"

@@ -34,5 +34,12 @@ class Actor extends HasGetters
         rgb(1, 0, 1)
   }
 
+  say: (what) =>
+    hsSay(@talkColor, @pos - V2(0, 30), what)
+
+  walkTo: (where) =>
+    hsWalkTo(@ent, where)
+
   interact: (verb) =>
+
 
