@@ -52,12 +52,7 @@ do
       end,
       talkColor = function(self)
         do
-          local color = hsEntTalkColor(self.ent)
-          if color then
-            return color
-          else
-            return rgb(1, 0, 1)
-          end
+          return hsEntTalkColor(self.ent) or rgb(1, 0, 1)
         end
       end
     },

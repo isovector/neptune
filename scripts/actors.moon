@@ -24,15 +24,12 @@ class HasGetters
 class Actor extends HasGetters
   new: (@ent=hsNewEntity()) =>
 
-  getters: {
-    pos:       => hsEntPos(@ent)
-    talkColor: => do
-      color = hsEntTalkColor(@ent)
-      if color
-        color
-      else
-        rgb(1, 0, 1)
-  }
+  getters:
+    {
+      pos:       => hsEntPos(@ent)
+      talkColor: => do
+        hsEntTalkColor(@ent) or rgb(1, 0, 1)
+    }
 
   say: (what) =>
     hsSay(@talkColor, @pos - V2(0, 30), what)
@@ -41,5 +38,4 @@ class Actor extends HasGetters
     hsWalkTo(@ent, where)
 
   interact: (verb) =>
-
 
