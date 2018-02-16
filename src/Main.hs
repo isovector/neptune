@@ -57,14 +57,15 @@ main = do
 
   flip fix (start, s0) $ \loop (last, s) -> do
     now <- getNow
+    let dt = now - last
     s' <- execGame s $ do
       update
-      tick $ now - last
+      tick dt
 
       scene <- draw
       liftIO $ render engine scene (640, 480)
 
-    s'' <- updateLua s'
+    s'' <- updateLua dt s'
     shouldQuit <- SDL.quitRequested
     unless shouldQuit $ loop (now, s'')
 

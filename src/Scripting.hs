@@ -63,12 +63,12 @@ exposeComponent nm f =
 
 ------------------------------------------------------------------------------
 -- | Not re-entrant. Don't event try!
-updateLua :: GameState -> IO GameState
-updateLua s@(g, _) = do
+updateLua :: Time -> GameState -> IO GameState
+updateLua dt s@(g, _) = do
   writeIORef globalGameState s
   x <- runLuaWith (_gLuaState g) $ do
          void . sequence $ _gLuaActions g
-         dostring "tasks:continue()"
+         dostring $ "tasks:continue(" <> show dt <> ")"
   when (x /= OK) . liftIO $ print x
 
   s' <- readIORef globalGameState

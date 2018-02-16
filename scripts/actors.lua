@@ -51,9 +51,7 @@ do
         return hsEntPos(self.ent)
       end,
       talkColor = function(self)
-        do
-          return hsEntTalkColor(self.ent) or rgb(1, 0, 1)
-        end
+        return hsEntTalkColor(self.ent) or rgb(1, 0, 1)
       end
     },
     say = function(self, what)
