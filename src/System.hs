@@ -25,9 +25,7 @@ getSystemEvent = do
   ctrl  <- getGlobals $ view gController
   ctrl' <- getController
 
-  when (_ctrlKeys ctrl' QKey) $ do
-    mouse <- getMousePos
-    error $ show mouse
+  when (_ctrlKeys ctrl' QKey) $ error "bye"
 
   setGlobals $ gController .~ ctrl'
 
