@@ -11,7 +11,6 @@ import Data.Ecstasy hiding (runSystem)
 import Types
 import Linear.Metric
 import Timers
-import Scripting
 import Utils
 
 
@@ -44,8 +43,8 @@ tick dt = do
     pure $ defEntity'
       { pathing =
           case navigate (view navmesh room) src dst of
-            Just path -> Set $ Following path
-            Nothing   -> Unset
+            Just p  -> Set $ Following p
+            Nothing -> Unset
       }
 
   emap $ do

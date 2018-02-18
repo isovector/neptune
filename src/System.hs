@@ -17,7 +17,6 @@ import Types
 data SystemEvent
   = Resize    !(V2 Int)
   | MouseEdge !Bool
-  | Exit
   deriving (Show)
 
 
@@ -26,7 +25,9 @@ getSystemEvent = do
   ctrl  <- getGlobals $ view gController
   ctrl' <- getController
 
-  when (_ctrlKeys ctrl' QKey) $ error "bye"
+  when (_ctrlKeys ctrl' QKey) $ do
+    mouse <- getMousePos
+    error $ show mouse
 
   setGlobals $ gController .~ ctrl'
 
@@ -80,9 +81,6 @@ update = do
       let verb = getBBSurface (coinSurface p) mouse
       for_ verb $ doInteraction it
       setGlobals $ gInputDFA .~ IStart
-
-
-    (_, Exit) -> error "bye felicia"
 
     _ -> pure ()
 

@@ -32,7 +32,7 @@ costumeRoom =
   Room background
        (imageSize regions)
        (buildNavMesh regions)
-       0.75
+       1
      $ mkHotspot regions (== 0x30)
          (Hotspot 0x30 "Door" Touch)
   <||> mkHotspot regions (== 0x66)

@@ -34,7 +34,7 @@ applyViewPortToPicture
             , viewPortTranslate = v2
             , viewPortRotate    = rot
             }
-  = scale size . rotate rot . move (negate v2)
+  = move (negate v2) . scale size . rotate rot
 
 focusCamera :: V2 Int  -- ^ Room size.
             -> V2 Int  -- ^ View size.

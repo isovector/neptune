@@ -40,7 +40,7 @@ import           Data.Ecstasy
 import           Data.Map.Strict (Map)
 import           Foreign.Lua (LuaState, Lua)
 import           Foreign.Marshal.Alloc (alloca)
-import           Game.Sequoia hiding (render, step, V2, E)
+import           Game.Sequoia hiding (render, step, V2, E, prev)
 import           Game.Sequoia.Keyboard (Key (..), getKeyState)
 import           Game.Sequoia.Utils (showTrace)
 import           Linear.V2

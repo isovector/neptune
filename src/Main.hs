@@ -55,9 +55,9 @@ main = do
   start  <- realToFrac <$> getPOSIXTime
   s0     <- execGame (g, (0, defWorld)) initialize
 
-  flip fix (start, s0) $ \loop (last, s) -> do
+  flip fix (start, s0) $ \loop (prev, s) -> do
     now <- getNow
-    let dt = now - last
+    let dt = now - prev
     s' <- execGame s $ do
       update
       tick dt
@@ -82,12 +82,21 @@ initialize = do
   void $ newEntity $ defEntity
     { pos = Just $ V2 135 176
     , gfx = Just
+          . move (V2 0 (-15))
           . filled (rgb 0 0 1)
           $ circle 15
     , speed = Just 50
     , talkColor = Just $ rgb 0 0.7 1
     , hasFocus = Just ()
     , isAvatar = Just ()
+    }
+
+  void $ newEntity $ defEntity
+    { pos = Just $ V2 254 197
+    , gfx = Just
+          . move (V2 (-44) $ -90)
+          . unsafeLoadPng
+          $ "assets" </> "costume" </> "table"
     }
 
   void $ newEntity $ defEntity
@@ -116,8 +125,10 @@ draw = do
        . pure
        -- . applyViewPortToPicture vp
        . group
-       $ [ pic ]
-      ++ fmap (uncurry $ drawGfx size) gfxs
+       $ [pic]
+      ++ ( fmap (uncurry $ drawGfx size)
+         $ sortOn (view _y . fst) gfxs
+         )
       ++ case coin of
            ICoinOpen p _ -> [translate' p coinPic]
            _ -> []
