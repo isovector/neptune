@@ -9,7 +9,7 @@ import Foreign.Lua
 import Foreign.Lua.Api (newstate)
 import Types
 import Utils
-import Orphans (unEnt)
+import Orphans ()
 
 
 globalGameState :: IORef GameState
@@ -28,12 +28,21 @@ initLua = do
     registerHaskellFunction "hsNewEntity" $ liftGame $
       newEntity defEntity
 
-    exposeComponent "pos"       pos       $ \a s -> s { pos = Set a }
+    exposeComponent "pos"       pos       $ \a s -> s { pos       = Set a }
+    exposeComponent "speed"     speed     $ \a s -> s { speed     = Set a }
     exposeComponent "talkColor" talkColor $ \a s -> s { talkColor = Set a }
+    exposeComponent "fromRoom"  fromRoom  $ \a s -> s { fromRoom  = Set a }
+    exposeUnique    "isAvatar"  isAvatar  $ \a s -> s { isAvatar  = a }
+    exposeUnique    "hasFocus"  hasFocus  $ \a s -> s { hasFocus  = a }
 
     registerHaskellFunction "hsGetPlayer" . liftGame $ do
       player <- efor $ \e -> with isAvatar >> pure e
       pure . Optional $ listToMaybe player
+
+    registerHaskellFunction "hsMakeRedDude" $ \e -> liftGame $ do
+      setEntity e $ defEntity'
+        { gfx = Set $ filled (rgb 1 0 0) $ rect 30 30
+        }
 
     registerHaskellFunction "hsSay" $ liftGame .:. timedText
     registerHaskellFunction "hsWalkTo" $ \e p -> liftGame $ do
@@ -52,6 +61,18 @@ liftGame g = liftIO $ do
   (s', a) <- runGame s g
   writeIORef globalGameState s'
   pure a
+
+exposeUnique
+    :: String
+    -> (EntWorld 'FieldOf -> Maybe ())
+    -> (Update () -> EntWorld 'SetterOf -> EntWorld 'SetterOf)
+    -> Lua ()
+exposeUnique nm fGet fSet =
+  exposeComponent nm
+      (maybe (Just False)
+             (const $ Just True)
+        . fGet)
+      $ \a s -> fSet (bool Unset (Set ()) a) s
 
 
 exposeComponent

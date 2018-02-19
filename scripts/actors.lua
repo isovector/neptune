@@ -72,12 +72,48 @@ do
           return hsSetPos(self.ent, pos)
         end
       },
+      speed = {
+        get = function(self)
+          return hsGetSpeed(self.ent)
+        end,
+        set = function(self, spe)
+          return hsSetSpeed(self.ent, spe)
+        end
+      },
       talkColor = {
         get = function(self)
           return hsGetTalkColor(self.ent) or rgb(1, 0, 1)
         end,
         set = function(self, col)
           return hsSetTalkColor(self.ent, col)
+        end
+      },
+      fromRoom = {
+        get = function(self)
+          return hsGetFromRoom(self.ent)
+        end,
+        set = function(self, roo)
+          return hsSetFromRoom(self.ent, roo)
+        end
+      },
+      isAvatar = {
+        get = function(self)
+          return hsGetIsAvatar(self.ent)
+        end,
+        set = function(self, yes)
+          if not yes then
+            return error("you can't set isAvatar to false")
+          else
+            return hsSetIsAvatar(self.ent, yes)
+          end
+        end
+      },
+      hasFocus = {
+        get = function(self)
+          return hsGetHasFocus(self.ent)
+        end,
+        set = function(self, yes)
+          return hsSetHasFocus(self.ent, yes)
         end
       }
     },

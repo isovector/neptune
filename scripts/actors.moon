@@ -38,9 +38,25 @@ class Actor extends HasProperties
     pos:
       get:       => hsGetPos(@ent)
       set: (pos) => hsSetPos(@ent, pos)
+    speed:
+      get:       => hsGetSpeed(@ent)
+      set: (spe) => hsSetSpeed(@ent, spe)
     talkColor:
       get:       => hsGetTalkColor(@ent) or rgb(1, 0, 1)
       set: (col) => hsSetTalkColor(@ent, col)
+    fromRoom:
+      get:       => hsGetFromRoom(@ent)
+      set: (roo) => hsSetFromRoom(@ent, roo)
+    isAvatar:
+      get:       => hsGetIsAvatar(@ent)
+      set: (yes) =>
+        if not yes
+          error "you can't set isAvatar to false"
+        else
+          hsSetIsAvatar(@ent, yes)
+    hasFocus:
+      get:       => hsGetHasFocus(@ent)
+      set: (yes) => hsSetHasFocus(@ent, yes)
 
   say: (what) =>
     hsSay(@talkColor, @pos - V2(0, 30), what)

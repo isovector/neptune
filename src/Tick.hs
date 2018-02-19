@@ -52,6 +52,7 @@ tick dt = do
     Following (g : gs) <- get pathing
     sp                 <- get speed
 
+
     let diff = g - p
         dir = normalize diff
         mag = sp * dt

@@ -35,6 +35,7 @@ import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Monad.State (StateT (..), gets, modify)
 import           Control.Monad.Trans (lift)
 import           Control.Monad.Trans.Reader
+import           Data.ByteString (ByteString)
 import           Data.Composition
 import           Data.Ecstasy
 import           Data.Map.Strict (Map)
@@ -107,6 +108,7 @@ data EntWorld f = Entity
   , isAvatar    :: Component f 'Unique ()
   , isNarration :: Component f 'Unique ()
   , hasFocus    :: Component f 'Unique ()
+  , fromRoom    :: Component f 'Field ByteString
   } deriving (Generic)
 
 deriving instance Show (EntWorld 'WorldOf)
