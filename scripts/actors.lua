@@ -1,24 +1,41 @@
-local HasGetters
+local HasProperties
 do
   local _class_0
   local _base_0 = {
-    getters = { },
+    properties = { },
     __inherited = function(self, cls)
       local old_init = cls.__init
       cls.__init = function(self, ...)
         old_init(self, ...)
         local mt = getmetatable(self)
         local old_index = mt.__index
+        local old_newindex = mt.__newindex
         mt.__index = function(self, name)
           do
-            local getter = old_index.getters[name]
-            if getter then
-              return getter(self)
-            else
-              if type(old_index) == "function" then
-                return old_index(self, name)
+            do
+              local getter = (old_index.properties[name] and old_index.properties[name].get)
+              if getter then
+                return getter(self)
               else
-                return old_index[name]
+                if type(old_index) == "function" then
+                  return old_index(self, name)
+                else
+                  return old_index[name]
+                end
+              end
+            end
+          end
+        end
+        mt.__newindex = function(self, name, value)
+          do
+            local setter = (old_index.properties[name] and old_index.properties[name].set)
+            if setter then
+              return setter(self, value)
+            else
+              if type(old_newindex) == "function" then
+                return old_newindex(self, name, value)
+              else
+                return rawset(self, name, value)
               end
             end
           end
@@ -30,7 +47,7 @@ do
   _class_0 = setmetatable({
     __init = function() end,
     __base = _base_0,
-    __name = "HasGetters"
+    __name = "HasProperties"
   }, {
     __index = _base_0,
     __call = function(cls, ...)
@@ -40,19 +57,29 @@ do
     end
   })
   _base_0.__class = _class_0
-  HasGetters = _class_0
+  HasProperties = _class_0
 end
 do
   local _class_0
-  local _parent_0 = HasGetters
+  local _parent_0 = HasProperties
   local _base_0 = {
-    getters = {
-      pos = function(self)
-        return hsEntPos(self.ent)
-      end,
-      talkColor = function(self)
-        return hsEntTalkColor(self.ent) or rgb(1, 0, 1)
-      end
+    properties = {
+      pos = {
+        get = function(self)
+          return hsGetPos(self.ent)
+        end,
+        set = function(self, pos)
+          return hsSetPos(self.ent, pos)
+        end
+      },
+      talkColor = {
+        get = function(self)
+          return hsGetTalkColor(self.ent) or rgb(1, 0, 1)
+        end,
+        set = function(self, col)
+          return hsSetTalkColor(self.ent, col)
+        end
+      }
     },
     say = function(self, what)
       return hsSay(self.talkColor, self.pos - V2(0, 30), what)
@@ -97,5 +124,7 @@ do
     _parent_0.__inherited(_parent_0, _class_0)
   end
   Actor = _class_0
-  return _class_0
+end
+getPlayer = function(self)
+  return Actor(hsGetPlayer())
 end

@@ -1,4 +1,4 @@
-export V2, Color, rgb, rgba
+export V2, Color, rgb, rgba, enum
 
 class V2
   new: (@x, @y) =>
@@ -18,6 +18,10 @@ class Color
 
   __tostring: =>
     "rgba(#{@r}, #{@g}, #{@b}, #{@a})"
+
+enum = (values) ->
+  setmetatable {v,v for v in *values}, __index: (k) =>
+    error "don't know `#{k}` for enum"
 
 rgba = Color
 rgb = Color

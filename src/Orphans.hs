@@ -30,10 +30,11 @@ instance ToLuaStack Double where
   push = push . LuaNumber
 
 instance FromLuaStack Ent where
-  peek si = Ent <$> getField si "ent"
+  -- peek si = Ent <$> getField si "ent"
+  peek si = Ent <$> peek si
 
 instance ToLuaStack Ent where
-  push (Ent e) = callAndKeep "Actor" e
+  push = push . unEnt
 
 
 instance FromLuaStack Color where

@@ -1,9 +1,7 @@
 export player
 
-player = hsGetPlayer()
+player = getPlayer()
 player.interact = (verb) => do
   @say(verb)
-  @walkTo(V2(474, 172))
-  sleep(3)
-  @say("hello from the taskmgr")
+  @pos = V2(474, 172)
 

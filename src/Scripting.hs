@@ -26,10 +26,10 @@ initLua = do
     openlibs
 
     registerHaskellFunction "hsNewEntity" $ liftGame $
-      unEnt <$> newEntity defEntity
+      newEntity defEntity
 
-    exposeComponent "hsEntPos" pos
-    exposeComponent "hsEntTalkColor" talkColor
+    exposeComponent "pos"       pos       $ \a s -> s { pos = Set a }
+    exposeComponent "talkColor" talkColor $ \a s -> s { talkColor = Set a }
 
     registerHaskellFunction "hsGetPlayer" . liftGame $ do
       player <- efor $ \e -> with isAvatar >> pure e
@@ -37,7 +37,7 @@ initLua = do
 
     registerHaskellFunction "hsSay" $ liftGame .:. timedText
     registerHaskellFunction "hsWalkTo" $ \e p -> liftGame $ do
-      setEntity (Ent e) $ defEntity'
+      setEntity e $ defEntity'
         { pathing = Set $ NavTo p
         }
 
@@ -54,11 +54,22 @@ liftGame g = liftIO $ do
   pure a
 
 
-exposeComponent :: ToLuaStack a => String -> (EntWorld 'FieldOf -> Maybe a) -> Lua ()
-exposeComponent nm f =
-  registerHaskellFunction nm $ \e -> liftGame $ do
-    ent <- getEntity $ Ent e
-    pure . Optional $ f ent
+exposeComponent
+    :: ( ToLuaStack a
+       , FromLuaStack a
+       )
+    => String
+    -> (EntWorld 'FieldOf -> Maybe a)
+    -> (a -> EntWorld 'SetterOf -> EntWorld 'SetterOf)
+    -> Lua ()
+exposeComponent nm fGet fSet = do
+  registerHaskellFunction ("hsGet" <> nm') $ \e -> liftGame $ do
+    ent <- getEntity e
+    pure . Optional $ fGet ent
+  registerHaskellFunction ("hsSet" <> nm') $ \e a -> liftGame $ do
+    setEntity e $ fSet a defEntity'
+  where
+    nm' = nm & _head %~ toUpper
 
 
 ------------------------------------------------------------------------------
