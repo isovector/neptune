@@ -1,5 +1,4 @@
 require('v2')
 require('room')
 require('actors')
-require('tasks')
-return require('rooms.costume')
+return require('tasks')

@@ -1,5 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedLists   #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections     #-}
 
 module Main where
@@ -78,7 +79,6 @@ main = do
 
 initialize :: Game ()
 initialize = do
-  asyncLua "require 'test'"
   void $ newEntity $ defEntity
     { pos = Just $ V2 135 176
     , gfx = Just
@@ -104,6 +104,9 @@ initialize = do
     , gfx         = Nothing
     , isNarration = Just ()
     }
+
+  asyncLua "require 'test'"
+  loadRoom "costume"
 
 coinPic :: Form
 coinPic = move (V2 (-72) (-28)) $ unsafeLoadPng $ "assets" </> "actionbar"

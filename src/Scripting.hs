@@ -7,9 +7,9 @@ module Scripting where
 
 import Foreign.Lua
 import Foreign.Lua.Api (newstate)
+import Orphans ()
 import Types
 import Utils
-import Orphans ()
 
 
 globalGameState :: IORef GameState
@@ -113,4 +113,17 @@ asyncLua str = do
           . dostring
           $ "tasks:start(function() " <> str <> " end)"
   setGlobals $ gLuaActions %~ (lua :)
+
+
+loadRoom :: String -> Game ()
+loadRoom room = do
+  emap $ do
+    with fromRoom
+    pure delEntity
+
+  asyncLua $ mconcat
+    [ "require 'rooms.", room, "'"
+    , "\n"
+    , "rooms['", room, "']:load()"
+    ]
 

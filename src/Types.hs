@@ -8,7 +8,8 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 module Types
-  ( Image
+  ( ByteString
+  , Image
   , MonadIO (..)
   , MouseButton (..)
   , PixelRGBA8

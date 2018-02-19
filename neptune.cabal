@@ -51,6 +51,7 @@ executable neptune
     , mtl
     , sdl2
     , sequoia
+    , string-conv
     , text
     , time
     , transformers

@@ -25,11 +25,7 @@ timedText c p str = do
            . length
            $ words str
   ent <- textEnt c p str
-  startTimer (TimerText ent) time $ do
-    setEntity ent defEntity'
-      { pos = Unset
-      , gfx = Unset
-      }
+  startTimer (TimerText ent) time $ deleteEntity ent
 
 
 textEnt :: Color -> Pos -> String -> Game Ent

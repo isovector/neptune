@@ -1,5 +1,3 @@
-rooms[roomId.costume]:load()
-print(hsGetPlayer())
 player = getPlayer()
 player.interact = function(self, verb)
   do
